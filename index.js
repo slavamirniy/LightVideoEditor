@@ -59,14 +59,9 @@ function flipVertical() {
 }
 
 function getFrame() {
-    canvas.style.display = 'none';
-    video.style.display = 'block';
-    btns.innerHTML = '';
-    addBtn('Cut this frame', function() {
-        var image = new Image();
-        image.src = canvas.toDataURL();
-        document.body.append(image);
-    })
+    let image = new Image();
+    image.src = canvas.toDataURL();
+    document.body.append(image);
 }
 
 addBtn("Pause", x => video.pause());
