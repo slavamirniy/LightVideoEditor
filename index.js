@@ -26,6 +26,7 @@ video.addEventListener('loadedmetadata', function() {
     metadata.height = video.videoHeight;
     metadata.scalewidth = metadata.width;
     metadata.scaleheight = metadata.height;
+    metadata.isVertical = false;
     metadata.pixilate = false
 });
 
@@ -33,7 +34,12 @@ video.addEventListener('play', function() {
     let $this = this;
     (function loop() {
         if (!$this.paused && !$this.ended) {
-            ctx.drawImage($this, 0, 0, metadata.scalewidth, metadata.scaleheight);
+            ctx.fillRect(0, 0, canvas.width, canvas.height)
+
+            if (metadata.isVertical)
+                ctx.drawImage($this, 0, canvas.height / 2 - metadata.scaleheight / 2, metadata.scalewidth, metadata.scaleheight);
+            else
+                ctx.drawImage($this, 0, 0, metadata.scalewidth, metadata.scaleheight);
 
             if (metadata.pixilate) {
                 ctx.drawImage(canvas, 0, 0, metadata.scalewidth / 2, metadata.scaleheight, 0, 0, metadata.width / 2, metadata.height);
@@ -109,10 +115,23 @@ function upscale() {
     metadata.pixilate = true;
 }
 
+function toVertical() {
+    canvas.width = 450;
+    canvas.height = 800;
+    metadata.scalewidth = canvas.width;
+    metadata.scaleheight = metadata.height * (metadata.scalewidth / metadata.width);
+    metadata.isVertical = true;
+}
+
+function color() {
+    ctx.filter = 'contrast(120%) saturate(120%)'
+}
+
 addBtn("Pause", x => video.pause());
 addBtn("Play", x => video.play());
 addBtn("Flip Horizontal", flipHorizontal);
 addBtn("Flip Vertical", flipVertical);
-addBtn("To Vertical", flipVertical);
+addBtn("To Vertical", toVertical);
 addBtn("Get frames", getFrames);
 addBtn("Upscale", upscale);
+addBtn("Color", color);
