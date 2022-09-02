@@ -1,7 +1,12 @@
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 let video = document.createElement('video');
 video.src = 'source.mp4';
 video.controls = true;
 video.crossOrigin = "Anonymous";
+video.style.display = 'none';
 document.body.append(video);
 
 let canvas = document.createElement('canvas');
@@ -19,15 +24,23 @@ video.addEventListener('loadedmetadata', function() {
 
     metadata.width = video.videoWidth;
     metadata.height = video.videoHeight;
+    metadata.scalewidth = metadata.width;
+    metadata.scaleheight = metadata.height;
+    metadata.pixilate = false
 });
 
 video.addEventListener('play', function() {
     let $this = this;
-    video.style.display = 'none';
     (function loop() {
         if (!$this.paused && !$this.ended) {
-            ctx.drawImage($this, 0, 0);
-            setTimeout(loop, 1000 / 30); // drawing at 30fps
+            ctx.drawImage($this, 0, 0, metadata.scalewidth, metadata.scaleheight);
+
+            if (metadata.pixilate) {
+                ctx.drawImage(canvas, 0, 0, metadata.scalewidth / 2, metadata.scaleheight, 0, 0, metadata.width / 2, metadata.height);
+                ctx.drawImage($this, metadata.width / 2, 0, metadata.width / 2, metadata.height, metadata.width / 2, 0, metadata.width / 2, metadata.height);
+            }
+
+            setTimeout(loop, 1000 / 30);
         }
     })();
 }, 0);
@@ -58,10 +71,42 @@ function flipVertical() {
     ctx.translate(-metadata.width, 0);
 }
 
-function getFrame() {
-    let image = new Image();
-    image.src = canvas.toDataURL();
-    document.body.append(image);
+async function getFrames() {
+    video.pause();
+
+    let framesCount = Math.floor(video.duration)
+
+    canvas.width = 500;
+    canvas.height = 500;
+
+    let q = Math.sqrt((canvas.width * canvas.height) / (metadata.width * metadata.height));
+    let s = Math.ceil(Math.sqrt(framesCount));
+    let frameHeight = q * (metadata.height / s);
+    let frameWidth = q * (metadata.width / s);
+
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    for (let i = 0, x = 0, y = 0; i <= framesCount; i++) {
+        video.currentTime = i;
+        await sleep(50);
+        ctx.drawImage(video, x * frameWidth, y * frameHeight, frameWidth, frameHeight);
+        x++;
+        if ((x) * frameWidth > canvas.width) {
+            y++
+            x = 0
+        }
+    }
+}
+
+function upscale() {
+    let size = 25 / 100;
+    metadata.scalewidth = canvas.width * size;
+    metadata.scaleheight = canvas.height * size;
+    ctx.msImageSmoothingEnabled = false;
+    ctx.mozImageSmoothingEnabled = false;
+    ctx.webkitImageSmoothingEnabled = false;
+    ctx.imageSmoothingEnabled = false;
+    metadata.pixilate = true;
 }
 
 addBtn("Pause", x => video.pause());
@@ -69,4 +114,5 @@ addBtn("Play", x => video.play());
 addBtn("Flip Horizontal", flipHorizontal);
 addBtn("Flip Vertical", flipVertical);
 addBtn("To Vertical", flipVertical);
-addBtn("Get frame", getFrame);
+addBtn("Get frames", getFrames);
+addBtn("Upscale", upscale);
