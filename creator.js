@@ -12,8 +12,11 @@ class SimilarAnimation {
         this.animations = SimilarAnimation.getAnimationsDictionary(this);
         this.timers = []
 
+        this.animationName = null;
+
         this.pixilatePower = 0.5;
         this.isStarted = false;
+        this.isLoaded = false;
 
         this.dividerPosition = 50; // from 1 to 100
         this.dividerPositionVX = 1;
@@ -66,6 +69,11 @@ class SimilarAnimation {
 
             owner.scaledWidth = owner.videoWidth;
             owner.scaledHeight = owner.videoHeight;
+
+            if (this.readyState >= 3) {
+                owner.isLoaded = true;
+                owner.animations[owner.animationName](owner);
+            }
         });
 
         video.addEventListener('play', function() {
@@ -177,21 +185,18 @@ class SimilarAnimation {
 
     upscaleAnimation(self) {
         self.strategy = self.blurNextFrame;
-        return self.canvas;
     }
 
     flipHorizontalAnimation(self) {
         self.ctx.scale(1, -1);
         self.ctx.translate(0, -self.canvas.height);
         self.strategy = self.defaultNextFrame;
-        return self.canvas;
     }
 
     flipVerticalAnimation(self) {
         self.ctx.scale(-1, 1);
         self.ctx.translate(-self.canvas.width, 0);
         self.strategy = self.defaultNextFrame;
-        return self.canvas;
     }
 
     getFramesAnimation(self) {
@@ -225,23 +230,19 @@ class SimilarAnimation {
             }
         }
         self.strategy = self.defaultNextFrame;
-        return self.canvas;
     }
 
     toVerticalAnimation(self) {
         self.strategy = self.verticalCropNextFrame;
-        return self.canvas;
     }
 
     colorAnimation(self) {
         self.ctx.filter = 'contrast(120%) saturate(120%)'
         self.strategy = self.defaultNextFrame;
-        return self.canvas;
     }
 
     slowAnimation(self) {
         self.strategy = self.slowNextFrame;
-        return self.canvas;
     }
 
     setAnimation(name) {
@@ -249,8 +250,10 @@ class SimilarAnimation {
             console.error(name + ' animation not found!');
         }
 
-        let res = this.animations[name](this);
-        return res;
+        this.animationName = name;
+        if (this.isLoaded)
+            this.animations[name](this);
+        return this.canvas;
     }
 
     destroy() {
