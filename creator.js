@@ -1,9 +1,3 @@
-function sleep(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
-}
-
-// destroy method
-
 class SimilarAnimation {
     constructor(width, height, source) {
 
