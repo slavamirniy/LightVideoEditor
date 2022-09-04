@@ -7,10 +7,16 @@ function sleep(ms) {
 class SimilarAnimation {
     constructor(width, height, source) {
 
-        this.pixilate = false;
-        this.pixilatePower = 0.2;
+        this.strategy = this.defaultNextFrame;
 
-        this.isVertical = false;
+        this.animations = SimilarAnimation.getAnimationsDictionary(this);
+        this.timers = []
+
+        this.pixilatePower = 0.5;
+        this.isStarted = false;
+
+        this.dividerPosition = 50; // from 1 to 100
+        this.dividerPositionVX = 1;
 
         let video = document.createElement('video');
         video.src = source;
@@ -32,6 +38,26 @@ class SimilarAnimation {
             this.owner.video.play();
         };
 
+        this.canvas.destroy = function() {
+            this.owner.destroy();
+        }
+
+        this.canvas.reset = function() {
+            this.owner.ctx.reset();
+            this.owner.video.playbackRate = 1;
+            this.owner.timers.forEach(timer => {
+                window.clearTimeout(timer);
+            });
+            this.owner.isStarted = false;
+            this.owner.video.pause();
+            this.play = function() {
+                this.owner.video.play();
+            };
+            this.owner.ctx.globalAlpha = 1;
+
+            return this.owner;
+        }
+
         video.addEventListener('loadedmetadata', function() {
             const owner = this.owner;
 
@@ -45,11 +71,14 @@ class SimilarAnimation {
         video.addEventListener('play', function() {
             let $this = this;
             let owner = this.owner;
+            if (owner.isStarted) return;
+            owner.isStarted = true;
             (function loop() {
                 if (!$this.paused && !$this.ended) {
-                    owner.ctx.fillRect(0, 0, owner.canvas.width, owner.canvas.height)
+                    let canvasScaledWidth = owner.canvas.width;
+                    let canvasScaledHeight = owner.scaledHeight * (canvasScaledWidth / owner.scaledWidth);
 
-                    owner.nextFrame();
+                    owner.strategy(canvasScaledWidth, canvasScaledHeight, owner.ctx);
 
                     setTimeout(loop, 1000 / 30);
                 }
@@ -62,60 +91,113 @@ class SimilarAnimation {
         }, false);
     }
 
-    nextFrame() {
-        let ctx = this.ctx;
-        ctx.fillStyle = 'white';
-        ctx.fillRect(0, 0, this.canvas.width, this.canvas.height)
-
-        let canvasScaledWidth = this.canvas.width;
-        let canvasScaledHeight = this.scaledHeight * (canvasScaledWidth / this.scaledWidth);
-        let y = 0.5 * (this.canvas.height - canvasScaledHeight);
-
-        if (this.isVertical) {
-            ctx.fillStyle = 'black';
-            let width = this.canvas.height * 9 / 16;
-            let height = this.videoHeight * (width / this.videoWidth);
-            let x = this.canvas.width / 2 - this.canvas.height * 9 / 16 / 2
-            ctx.fillRect(x, 0, width, this.canvas.height)
-            ctx.drawImage(this.video, x, this.canvas.height / 2 - height / 2, width, height);
-        } else
-            ctx.drawImage(this.video, 0, y, canvasScaledWidth, canvasScaledHeight);
-
-        if (this.pixilate) {
-            ctx.drawImage(this.video, 0, y, canvasScaledWidth * this.pixilatePower, canvasScaledHeight * this.pixilatePower);
-            ctx.drawImage(this.canvas, 0, y, canvasScaledWidth * this.pixilatePower / 2, canvasScaledHeight * this.pixilatePower,
-                0, y, canvasScaledWidth / 2, canvasScaledHeight);
-        }
-    }
-
     static of(width, height, source) {
         let obj = new SimilarAnimation(width, height, source);
         return obj;
     }
 
-    pixilateAnimation() {
-        this.pixilate = true;
-        return this.canvas;
+    static getAnimationsDictionary(self = {}) {
+        return {
+            "flipVertical": self.flipVerticalAnimation,
+            "flipHorizontal": self.flipHorizontalAnimation,
+            "slowMotion": self.slowAnimation,
+            "getFrames": self.getFramesAnimation,
+            "upscale": self.upscaleAnimation,
+            "toVertical": self.toVerticalAnimation,
+            "colorCorrection_0": self.colorAnimation
+        }
     }
 
-    flipHorizontalAnimation() {
-        this.ctx.scale(1, -1);
-        this.ctx.translate(0, -this.canvas.height);
-
-        return this.canvas;
+    static getAnimationsNames() {
+        return Object.keys(SimilarAnimation.getAnimationsDictionary());
     }
 
-    flipVerticalAnimation() {
-        this.ctx.scale(-1, 1);
-        this.ctx.translate(-this.canvas.width, 0);
-
-        return this.canvas;
+    defaultNextFrame(canvasScaledWidth, canvasScaledHeight, ctx) {
+        let y = 0.5 * (this.canvas.height - canvasScaledHeight);
+        ctx.drawImage(this.video, 0, y, canvasScaledWidth, canvasScaledHeight);
     }
 
-    getFramesAnimation() {
-        this.video.pause();
+    slowNextFrame(canvasScaledWidth, canvasScaledHeight, ctx) {
+        ctx.globalAlpha = 0.2
+        this.video.playbackRate = 0.3
+        let y = 0.5 * (this.canvas.height - canvasScaledHeight);
+        ctx.drawImage(this.video, 0, y, canvasScaledWidth, canvasScaledHeight);
+    }
 
-        this.canvas.play = function() {
+    verticalCropNextFrame(canvasScaledWidth, canvasScaledHeight, ctx) {
+        ctx.fillStyle = 'black';
+        let width = this.canvas.height * 9 / 16;
+        let height = this.videoHeight * (width / this.videoWidth);
+        let x = this.canvas.width / 2 - this.canvas.height * 9 / 16 / 2
+
+        let cropWidth = this.videoHeight * (9 / 16);
+        let cropHeight = this.videoHeight;
+
+        ctx.fillRect(x, 0, width, this.canvas.height)
+        ctx.drawImage(this.video, this.videoWidth / 2 - cropWidth / 2, 0, cropWidth, cropHeight,
+            x, 0, width, this.canvas.height)
+    }
+
+    blurNextFrame(canvasScaledWidth, canvasScaledHeight, ctx) {
+        let y = 0.5 * (this.canvas.height - canvasScaledHeight);
+
+        ctx.filter = 'blur(2px)'
+        ctx.drawImage(this.video, 0, 0, this.videoWidth * this.dividerPosition / 100, this.videoHeight, 0, y, canvasScaledWidth * this.dividerPosition / 100, canvasScaledHeight);
+        ctx.filter = 'blur(0px)'
+        ctx.drawImage(this.video, this.videoWidth * this.dividerPosition / 100, 0, this.videoWidth * (100 - this.dividerPosition) / 100, this.videoHeight, canvasScaledWidth * this.dividerPosition / 100, y, canvasScaledWidth * (100 - this.dividerPosition) / 100, canvasScaledHeight);
+
+
+        ctx.globalAlpha = 0.5;
+        ctx.fillStyle = 'black';
+        ctx.fillRect(canvasScaledWidth * this.dividerPosition / 100, y, 2, canvasScaledHeight);
+        ctx.globalAlpha = 1;
+
+        this.dividerPosition += this.dividerPositionVX;
+        if (this.dividerPosition > 100 || this.dividerPosition < 0)
+            this.dividerPositionVX *= -1;
+    }
+
+    pixilateNextFrame(canvasScaledWidth, canvasScaledHeight, ctx) {
+        this.defaultNextFrame(canvasScaledWidth, canvasScaledHeight, ctx);
+
+        let y = 0.5 * (this.canvas.height - canvasScaledHeight);
+        ctx.drawImage(this.video, 0, 0, this.videoWidth * this.dividerPosition / 100, this.videoHeight, 0, y, canvasScaledWidth * this.pixilatePower * this.dividerPosition / 100, canvasScaledHeight * this.pixilatePower);
+        ctx.drawImage(this.canvas, 0, y, canvasScaledWidth * this.pixilatePower * this.dividerPosition / 100, canvasScaledHeight * this.pixilatePower,
+            0, y, canvasScaledWidth * this.dividerPosition / 100, canvasScaledHeight);
+
+        ctx.globalAlpha = 0.5;
+        ctx.fillStyle = 'black';
+        ctx.fillRect(canvasScaledWidth * this.dividerPosition / 100, y, 2, canvasScaledHeight);
+        ctx.globalAlpha = 1;
+
+        this.dividerPosition += this.dividerPositionVX;
+        if (this.dividerPosition > 100 || this.dividerPosition < 0)
+            this.dividerPositionVX *= -1;
+    }
+
+    upscaleAnimation(self) {
+        self.strategy = self.blurNextFrame;
+        return self.canvas;
+    }
+
+    flipHorizontalAnimation(self) {
+        self.ctx.scale(1, -1);
+        self.ctx.translate(0, -self.canvas.height);
+        self.strategy = self.defaultNextFrame;
+        return self.canvas;
+    }
+
+    flipVerticalAnimation(self) {
+        self.ctx.scale(-1, 1);
+        self.ctx.translate(-self.canvas.width, 0);
+        self.strategy = self.defaultNextFrame;
+        return self.canvas;
+    }
+
+    getFramesAnimation(self) {
+        self.video.pause();
+
+        self.canvas.play = function() {
             const owner = this.owner;
 
             let framesCount = Math.floor(owner.video.duration)
@@ -128,10 +210,13 @@ class SimilarAnimation {
             owner.ctx.fillRect(0, 0, owner.canvas.width, owner.canvas.height);
             for (let i = 0, x = 0, y = 0; i <= framesCount; i++) {
                 owner.video.currentTime = 0;
-                setTimeout(function(i, a, b, c, d) {
+                let timer = window.setTimeout(function(i, a, b, c, d) {
                     owner.video.currentTime = i;
                     owner.ctx.drawImage(owner.video, a, b, c, d);
-                }, (i + 1) * 50, i, x * frameWidth, y * frameHeight, frameWidth, frameHeight);
+                    // owner.ctx.drawImage(owner.video, 0, 0, owner.canvas.width, owner.canvas.height)
+                    // if (i % 2 == 1) owner.ctx.fillRect(0, 0, owner.canvas.width, owner.canvas.height)
+                }, (i + 1) * 200, i, x * frameWidth, y * frameHeight, frameWidth, frameHeight);
+                owner.timers.push(timer);
                 x++;
                 if (x * frameWidth > owner.canvas.width) {
                     y++
@@ -139,53 +224,38 @@ class SimilarAnimation {
                 }
             }
         }
-
-        return this.canvas;
+        self.strategy = self.defaultNextFrame;
+        return self.canvas;
     }
 
-    upscaleAnimation() {
-        let size = 25 / 100;
-        this.scaledWidth = canvas.width * size;
-        this.scaledHeight = canvas.height * size;
-        this.ctx.msImageSmoothingEnabled = false;
-        this.ctx.mozImageSmoothingEnabled = false;
-        this.ctx.webkitImageSmoothingEnabled = false;
-        this.ctx.imageSmoothingEnabled = false;
-        this.pixilate = true;
-
-        return this.canvas;
+    toVerticalAnimation(self) {
+        self.strategy = self.verticalCropNextFrame;
+        return self.canvas;
     }
 
-    toVerticalAnimation() {
-        this.isVertical = true;
-
-        return this.canvas;
+    colorAnimation(self) {
+        self.ctx.filter = 'contrast(120%) saturate(120%)'
+        self.strategy = self.defaultNextFrame;
+        return self.canvas;
     }
 
-    colorAnimation() {
-        this.ctx.filter = 'contrast(120%) saturate(120%)'
-
-        return this.canvas;
+    slowAnimation(self) {
+        self.strategy = self.slowNextFrame;
+        return self.canvas;
     }
 
-}
-
-class Test {
-    constructor(w, h) {
-        let canvas = document.createElement('canvas');
-        canvas.width = w;
-        canvas.height = h;
-        canvas.owner = this;
-        this.canvas = canvas;
-
-        this.ctx = canvas.getContext('2d');
-
-        this.canvas.play = function() {
-            this.owner.ctx.fillRect(0, 0, 100, 100)
+    setAnimation(name) {
+        if (!(name in this.animations)) {
+            console.error(name + ' animation not found!');
         }
+
+        let res = this.animations[name](this);
+        return res;
     }
 
-    static of(w, h) {
-        return new Test(w, h)
+    destroy() {
+        this.canvas.remove();
+        this.video.remove();
     }
+
 }
