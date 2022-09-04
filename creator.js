@@ -110,11 +110,29 @@ class SimilarAnimation {
             "toVertical": self.toVerticalAnimation,
             "toVerticalRotate90": self.toVerticalRotate90Animation,
             "colorCorrection_0": self.colorAnimation,
+            "noiseAnimation": self.noiseAnimation,
+            "stabilizationAnimation": self.stabilizationAnimation
         }
     }
 
     static getAnimationsNames() {
         return Object.keys(SimilarAnimation.getAnimationsDictionary());
+    }
+
+    setAnimation(name) {
+        if (!(name in this.animations)) {
+            console.error(name + ' animation not found!');
+        }
+
+        this.animationName = name;
+        if (this.isLoaded)
+            this.animations[name](this);
+        return this.canvas;
+    }
+
+    destroy() {
+        this.canvas.remove();
+        this.video.remove();
     }
 
     defaultNextFrame(canvasScaledWidth, canvasScaledHeight, ctx) {
@@ -154,41 +172,58 @@ class SimilarAnimation {
 
     }
 
-    blurNextFrame(canvasScaledWidth, canvasScaledHeight, ctx) {
-        let y = 0.5 * (this.canvas.height - canvasScaledHeight);
-
-        ctx.filter = 'blur(2px)'
-        ctx.drawImage(this.video, 0, 0, this.videoWidth * this.dividerPosition / 100, this.videoHeight, 0, y, canvasScaledWidth * this.dividerPosition / 100, canvasScaledHeight);
-        ctx.filter = 'blur(0px)'
-        ctx.drawImage(this.video, this.videoWidth * this.dividerPosition / 100, 0, this.videoWidth * (100 - this.dividerPosition) / 100, this.videoHeight, canvasScaledWidth * this.dividerPosition / 100, y, canvasScaledWidth * (100 - this.dividerPosition) / 100, canvasScaledHeight);
-
-
-        ctx.globalAlpha = 0.5;
-        ctx.fillStyle = 'black';
-        ctx.fillRect(canvasScaledWidth * this.dividerPosition / 100, y, 2, canvasScaledHeight);
-        ctx.globalAlpha = 1;
+    getDivider() {
+        let value = this.dividerPosition
 
         this.dividerPosition += this.dividerPositionVX;
-        if (this.dividerPosition > 100 || this.dividerPosition < 0)
+        if (this.dividerPosition >= 100 || this.dividerPosition <= 1)
             this.dividerPositionVX *= -1;
+
+        return { left: value / 100, right: (100 - value) / 100 };
     }
 
-    pixilateNextFrame(canvasScaledWidth, canvasScaledHeight, ctx) {
-        this.defaultNextFrame(canvasScaledWidth, canvasScaledHeight, ctx);
-
+    drawDivider(div, canvasScaledWidth, canvasScaledHeight, ctx) {
         let y = 0.5 * (this.canvas.height - canvasScaledHeight);
-        ctx.drawImage(this.video, 0, 0, this.videoWidth * this.dividerPosition / 100, this.videoHeight, 0, y, canvasScaledWidth * this.pixilatePower * this.dividerPosition / 100, canvasScaledHeight * this.pixilatePower);
-        ctx.drawImage(this.canvas, 0, y, canvasScaledWidth * this.pixilatePower * this.dividerPosition / 100, canvasScaledHeight * this.pixilatePower,
-            0, y, canvasScaledWidth * this.dividerPosition / 100, canvasScaledHeight);
 
         ctx.globalAlpha = 0.5;
         ctx.fillStyle = 'black';
-        ctx.fillRect(canvasScaledWidth * this.dividerPosition / 100, y, 2, canvasScaledHeight);
+        ctx.fillRect(canvasScaledWidth * div.left, y, 2, canvasScaledHeight);
         ctx.globalAlpha = 1;
+    }
 
-        this.dividerPosition += this.dividerPositionVX;
-        if (this.dividerPosition > 100 || this.dividerPosition < 0)
-            this.dividerPositionVX *= -1;
+    drawDividedImage(left, canvasScaledWidth, canvasScaledHeight, ctx) {
+        let div = this.getDivider();
+        let y = 0.5 * (this.canvas.height - canvasScaledHeight);
+        if (left)
+            ctx.drawImage(this.video, 0, 0, this.videoWidth * div.left, this.videoHeight, 0, y, canvasScaledWidth * div.left, canvasScaledHeight);
+        else {
+            ctx.drawImage(this.video, this.videoWidth * div.left, 0, this.videoWidth * div.right, this.videoHeight, canvasScaledWidth * div.left, y, canvasScaledWidth * div.right, canvasScaledHeight);
+            this.drawDivider(div, canvasScaledWidth, canvasScaledHeight, ctx);
+        }
+    }
+
+    blurNextFrame(canvasScaledWidth, canvasScaledHeight, ctx) {
+        ctx.filter = 'blur(2px)'
+        this.drawDividedImage(true, canvasScaledWidth, canvasScaledHeight, ctx)
+        ctx.filter = 'blur(0px)'
+        this.drawDividedImage(false, canvasScaledWidth, canvasScaledHeight, ctx)
+    }
+
+    noiseNextFrame(canvasScaledWidth, canvasScaledHeight, ctx) {
+        let div = this.getDivider();
+        let y = 0.5 * (this.canvas.height - canvasScaledHeight);
+        SimilarAnimationHelpers.generateNoise(ctx, 0, y, canvasScaledWidth * div.left, canvasScaledHeight);
+        ctx.globalAlpha = 0.8;
+        this.defaultNextFrame(canvasScaledWidth, canvasScaledHeight, ctx);
+        this.drawDivider(div, canvasScaledWidth, canvasScaledHeight, ctx);
+    }
+
+    stabilizationNextFrame(canvasScaledWidth, canvasScaledHeight, ctx) {
+        let div = this.getDivider();
+        let y = 0.5 * (this.canvas.height - canvasScaledHeight);
+        ctx.drawImage(this.video, SimilarAnimationHelpers.random(5, 10), SimilarAnimationHelpers.random(5, 10), this.videoWidth * div.left, this.videoHeight - 10, 0, y, canvasScaledWidth * div.left, canvasScaledHeight);
+        ctx.drawImage(this.video, this.videoWidth * div.left + 10, 10, this.videoWidth * div.right - 10, this.videoHeight - 10, canvasScaledWidth * div.left, y, canvasScaledWidth * div.right, canvasScaledHeight);
+        this.drawDivider(div, canvasScaledWidth, canvasScaledHeight, ctx);
     }
 
     cropVerticalRotate90NextFrame(canvasScaledWidth, canvasScaledHeight, ctx) {
@@ -266,20 +301,31 @@ class SimilarAnimation {
         self.strategy = self.defaultNextFrame;
     }
 
-    setAnimation(name) {
-        if (!(name in this.animations)) {
-            console.error(name + ' animation not found!');
-        }
-
-        this.animationName = name;
-        if (this.isLoaded)
-            this.animations[name](this);
-        return this.canvas;
+    noiseAnimation(self) {
+        self.strategy = self.noiseNextFrame;
     }
 
-    destroy() {
-        this.canvas.remove();
-        this.video.remove();
+    stabilizationAnimation(self) {
+        self.strategy = self.stabilizationNextFrame;
     }
 
+}
+
+class SimilarAnimationHelpers {
+    static generateNoise(ctx, x, y, w, h) {
+        let idata = ctx.createImageData(w, h)
+
+        let buffer32 = new Uint32Array(idata.data.buffer),
+            buffer_len = buffer32.length,
+            i = 0
+
+        for (; i < buffer_len; i++)
+            buffer32[i] =
+            ((255 * Math.random()) | 0) << 24;
+        ctx.putImageData(idata, x, y);
+    }
+
+    static random(min, max) {
+        return Math.random() * (max - min) + min;
+    }
 }
