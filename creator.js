@@ -221,7 +221,7 @@ class SimilarAnimation {
     stabilizationNextFrame(canvasScaledWidth, canvasScaledHeight, ctx) {
         let div = this.getDivider();
         let y = 0.5 * (this.canvas.height - canvasScaledHeight);
-        ctx.drawImage(this.video, SimilarAnimationHelpers.random(5, 10), SimilarAnimationHelpers.random(5, 10), this.videoWidth * div.left, this.videoHeight - 10, 0, y, canvasScaledWidth * div.left, canvasScaledHeight);
+        ctx.drawImage(this.video, (Math.sin(Date.now() / 300)) * 10, (Math.cos(Date.now() / 250)) * 7, this.videoWidth * div.left, this.videoHeight - 10, 0, y, canvasScaledWidth * div.left, canvasScaledHeight);
         ctx.drawImage(this.video, this.videoWidth * div.left + 10, 10, this.videoWidth * div.right - 10, this.videoHeight - 10, canvasScaledWidth * div.left, y, canvasScaledWidth * div.right, canvasScaledHeight);
         this.drawDivider(div, canvasScaledWidth, canvasScaledHeight, ctx);
     }
