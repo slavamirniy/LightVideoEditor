@@ -82,7 +82,8 @@ class SimilarAnimation {
 
                     owner.strategy(canvasScaledWidth, canvasScaledHeight, owner.ctx);
 
-                    setTimeout(loop, 1000 / 30);
+                    let timer = setTimeout(loop, 1000 / 30);
+                    owner.timers.push(timer);
                 }
             })();
         }, 0);
@@ -103,10 +104,12 @@ class SimilarAnimation {
             "flipVertical": self.flipVerticalAnimation,
             "flipHorizontal": self.flipHorizontalAnimation,
             "slowMotion": self.slowAnimation,
+            "fastMotion": self.fastAnimation,
             "getFrames": self.getFramesAnimation,
             "upscale": self.upscaleAnimation,
             "toVertical": self.toVerticalAnimation,
-            "colorCorrection_0": self.colorAnimation
+            "toVerticalRotate90": self.toVerticalRotate90Animation,
+            "colorCorrection_0": self.colorAnimation,
         }
     }
 
@@ -126,18 +129,29 @@ class SimilarAnimation {
         ctx.drawImage(this.video, 0, y, canvasScaledWidth, canvasScaledHeight);
     }
 
-    verticalCropNextFrame(canvasScaledWidth, canvasScaledHeight, ctx) {
+    verticalCropNextFrame(canvasScaledWidth, canvasScaledHeight, ctx, rotation = 0) {
         ctx.fillStyle = 'black';
-        let width = this.canvas.height * 9 / 16;
-        let height = this.videoHeight * (width / this.videoWidth);
-        let x = this.canvas.width / 2 - this.canvas.height * 9 / 16 / 2
+
+        let height = this.canvas.height;
+        let width = height * 9 / 16;
 
         let cropWidth = this.videoHeight * (9 / 16);
         let cropHeight = this.videoHeight;
 
-        ctx.fillRect(x, 0, width, this.canvas.height)
+        if (rotation == 90 || rotation == 270)
+            height = [this.canvas.width, width = height * width / this.canvas.width][0]
+
+        let x = this.canvas.width / 2 - height * 9 / 16 / 2
+        let centerX = this.canvas.width / 2;
+        let centerY = this.canvas.height / 2;
+
+        ctx.translate(centerX, centerY);
+        ctx.rotate(rotation * Math.PI / 180);
+        ctx.translate(-centerX, -centerY);
         ctx.drawImage(this.video, this.videoWidth / 2 - cropWidth / 2, 0, cropWidth, cropHeight,
-            x, 0, width, this.canvas.height)
+            centerX - width / 2, centerY - height / 2, width, height);
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+
     }
 
     blurNextFrame(canvasScaledWidth, canvasScaledHeight, ctx) {
@@ -177,6 +191,10 @@ class SimilarAnimation {
             this.dividerPositionVX *= -1;
     }
 
+    cropVerticalRotate90NextFrame(canvasScaledWidth, canvasScaledHeight, ctx) {
+        this.verticalCropNextFrame(canvasScaledWidth, canvasScaledHeight, ctx, 90);
+    }
+
     upscaleAnimation(self) {
         self.strategy = self.blurNextFrame;
     }
@@ -191,6 +209,10 @@ class SimilarAnimation {
         self.ctx.scale(-1, 1);
         self.ctx.translate(-self.canvas.width, 0);
         self.strategy = self.defaultNextFrame;
+    }
+
+    toVerticalRotate90Animation(self) {
+        self.strategy = self.cropVerticalRotate90NextFrame;
     }
 
     getFramesAnimation(self) {
@@ -237,6 +259,11 @@ class SimilarAnimation {
 
     slowAnimation(self) {
         self.strategy = self.slowNextFrame;
+    }
+
+    fastAnimation(self) {
+        self.video.playbackRate = 2;
+        self.strategy = self.defaultNextFrame;
     }
 
     setAnimation(name) {
