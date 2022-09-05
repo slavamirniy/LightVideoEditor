@@ -14,6 +14,7 @@ class SimilarAnimation {
 
         this.dividerPosition = 50; // from 1 to 100
         this.dividerPositionVX = 1;
+        this.dividerMove = true;
 
         let video = document.createElement('video');
         video.src = source;
@@ -47,6 +48,8 @@ class SimilarAnimation {
             });
             this.owner.isStarted = false;
             this.owner.video.pause();
+            // this.owner.dividerPosition = 50;
+            // this.owner.dividerPositionVX = 1;
             this.play = function() {
                 this.owner.video.play();
             };
@@ -92,6 +95,16 @@ class SimilarAnimation {
             this.currentTime = 0;
             this.play();
         }, false);
+
+        canvas.addEventListener("mousemove", function(e) {
+            this.owner.dividerMove = false;
+            this.owner.dividerPosition = (e.x / canvas.width) * 100;
+        })
+
+        canvas.addEventListener("mouseout", function(e) {
+            this.owner.dividerMove = true;
+            console.log("out")
+        })
     }
 
     static of(width, height, source) {
@@ -109,6 +122,7 @@ class SimilarAnimation {
             "upscale": self.upscaleAnimation,
             "toVertical": self.toVerticalAnimation,
             "toVerticalRotate90": self.toVerticalRotate90Animation,
+            "toHorizontal": self.toHorizontalAnimation,
             "colorCorrection_0": self.colorAnimation,
             "noiseAnimation": self.noiseAnimation,
             "stabilizationAnimation": self.stabilizationAnimation
@@ -148,8 +162,6 @@ class SimilarAnimation {
     }
 
     verticalCropNextFrame(canvasScaledWidth, canvasScaledHeight, ctx, rotation = 0) {
-        ctx.fillStyle = 'black';
-
         let height = this.canvas.height;
         let width = height * 9 / 16;
 
@@ -169,15 +181,33 @@ class SimilarAnimation {
         ctx.drawImage(this.video, this.videoWidth / 2 - cropWidth / 2, 0, cropWidth, cropHeight,
             centerX - width / 2, centerY - height / 2, width, height);
         ctx.setTransform(1, 0, 0, 1, 0, 0);
+    }
 
+    horizontalCropNextFrame(canvasScaledWidth, canvasScaledHeight, ctx) {
+        let height = this.canvas.width * 9 / 16;
+        let width = this.canvas.width;
+
+        let cropWidth = this.videoWidth;
+        let cropHeight = this.videoWidth * (9 / 16);
+
+        let centerX = this.canvas.width / 2;
+        let centerY = this.canvas.height / 2;
+
+        ctx.drawImage(this.video, this.videoWidth / 2 - cropWidth / 2, 0, cropWidth, cropHeight,
+            centerX - width / 2, centerY - height / 2, width, height);
     }
 
     getDivider() {
         let value = this.dividerPosition
 
-        this.dividerPosition += this.dividerPositionVX;
-        if (this.dividerPosition >= 100 || this.dividerPosition <= 1)
-            this.dividerPositionVX *= -1;
+        if (this.dividerMove) {
+            this.dividerPosition += this.dividerPositionVX;
+            if (this.dividerPosition >= 100 || this.dividerPosition <= 1) {
+                this.dividerPositionVX *= -1;
+                if (this.dividerPosition >= 100) this.dividerPosition = 99;
+                if (this.dividerPosition <= 1) this.dividerMove = 2;
+            }
+        }
 
         return { left: value / 100, right: (100 - value) / 100 };
     }
@@ -281,6 +311,10 @@ class SimilarAnimation {
             }
         }
         self.strategy = self.defaultNextFrame;
+    }
+
+    toHorizontalAnimation(self) {
+        self.strategy = self.horizontalCropNextFrame;
     }
 
     toVerticalAnimation(self) {

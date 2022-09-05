@@ -1,7 +1,7 @@
 // Создаю анимацию
 // .of - создает экземляр SimilarAnimation
 // .setAnimation - устанавливает анимацию и возвращает canvas
-let anim = SimilarAnimation.of(400, 400, 'source.mp4').setAnimation("upscale");
+let anim = SimilarAnimation.of(400, 400, 'source1.mp4').setAnimation("upscale");
 
 document.body.append(anim);
 
