@@ -115,7 +115,10 @@ class SimilarAnimation {
 
     destroy() {
         this.canvas.remove();
-        this.video.remove();
+        if (this.type == 'video')
+            this.video.remove();
+        if (this.type == 'iamge')
+            this.video.remove();
     }
 
     _startImage(source) {
