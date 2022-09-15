@@ -2,7 +2,8 @@
 // .of - создает экземляр SimilarAnimation
 // .setAnimation - устанавливает анимацию и возвращает canvas
 // type может быть 'image' и 'video'
-let anim = SimilarAnimation.of(200, 200, 'frog.jpg', 'image').setAnimation("imageColorCorrection_0");
+let contetnType = 'image';
+let anim = SimilarAnimation.of(200, 200, 'frog.jpg', contetnType).setAnimation("imageColorCorrection_0");
 
 document.body.append(anim);
 
@@ -18,7 +19,7 @@ function addBtn(name, method) {
 }
 
 // возвращает список анимаций
-let animations = SimilarAnimation.getAnimationsNames('image');
+let animations = SimilarAnimation.getAnimationsNames(contetnType);
 
 // .reset - убирает все изменения на канвасе, отключает анимации
 // .setAnimation - указываем новую анимацию
