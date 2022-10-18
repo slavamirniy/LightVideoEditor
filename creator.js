@@ -319,13 +319,13 @@ class SimilarAnimation {
         self.strategy = self._blurNextFrame;
     }
 
-    _flipHorizontalAnimation(self) {
+    _flipVerticalAnimation(self) {
         self.ctx.scale(1, -1);
         self.ctx.translate(0, -self.canvas.height);
         self.strategy = self._defaultNextFrame;
     }
 
-    _flipVerticalAnimation(self) {
+    _flipHorizontalAnimation(self) {
         self.ctx.scale(-1, 1);
         self.ctx.translate(-self.canvas.width, 0);
         self.strategy = self._defaultNextFrame;
@@ -386,13 +386,13 @@ class SimilarAnimation {
         self.strategy = self._defaultShowImage;
     }
 
-    _imageFlipVertical(self) {
+    _imageFlipHorizontal(self) {
         self.ctx.scale(-1, 1);
         self.ctx.translate(-self.canvas.width, 0);
         self.strategy = self._defaultShowImage;
     }
 
-    _imageFlipHorizontal(self) {
+    _imageFlipVertical(self) {
         self.ctx.scale(1, -1);
         self.ctx.translate(0, -self.canvas.height);
         self.strategy = self._defaultShowImage;
