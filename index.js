@@ -3,7 +3,7 @@
 // .setAnimation - устанавливает анимацию и возвращает canvas
 // type может быть 'image' и 'video'
 let contetnType = 'image';
-let anim = SimilarAnimation.of(200, 200, 'frog.jpg', contetnType).setAnimation("imageColorCorrection_0");
+let anim = SimilarAnimation.of(500, 500, 'frog.jpg', contetnType).setAnimation("imageColorCorrection_0");
 
 document.body.append(anim);
 

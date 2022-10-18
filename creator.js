@@ -93,7 +93,9 @@ class SimilarAnimation {
             },
             "image": {
                 "none": self._imageShow,
-                "imageColorCorrection_0": self._imageColorCorrection
+                "imageColorCorrection_0": self._imageColorCorrection,
+                "imageFlipHorizontal": self._imageFlipHorizontal,
+                "imageFlipVertical": self._imageFlipVertical
             }
         }
     }
@@ -381,6 +383,18 @@ class SimilarAnimation {
 
     _imageColorCorrection(self) {
         self.ctx.filter = 'contrast(120%) saturate(120%)'
+        self.strategy = self._defaultShowImage;
+    }
+
+    _imageFlipVertical(self) {
+        self.ctx.scale(-1, 1);
+        self.ctx.translate(-self.canvas.width, 0);
+        self.strategy = self._defaultShowImage;
+    }
+
+    _imageFlipHorizontal(self) {
+        self.ctx.scale(1, -1);
+        self.ctx.translate(0, -self.canvas.height);
         self.strategy = self._defaultShowImage;
     }
 
