@@ -1,5 +1,9 @@
 class SimilarAnimation {
-    constructor(width, height, source, type) {
+    constructor(width, height, source) {
+
+        let type = _SimilarAnimationHelpers.getTypeFromSource(source);
+        if (type == null)
+            return
 
         this.strategy = this._defaultNextFrame;
 
@@ -39,6 +43,8 @@ class SimilarAnimation {
         }
 
         this.canvas.play = this.playStrategy;
+        this.canvas.getAnimationsNames = () => SimilarAnimation.getAnimationsNames(this.type);
+        this.getAnimationsNames = () => SimilarAnimation.getAnimationsNames(this.type);
 
         this.canvas.destroy = function() {
             this.owner.destroy();
@@ -93,15 +99,19 @@ class SimilarAnimation {
             },
             "image": {
                 "none": self._imageShow,
-                "imageColorCorrection_0": self._imageColorCorrection,
-                "imageFlipHorizontal": self._imageFlipHorizontal,
-                "imageFlipVertical": self._imageFlipVertical
+                "colorCorrection_0": self._imageColorCorrection,
+                "flipHorizontal": self._imageFlipHorizontal,
+                "flipVertical": self._imageFlipVertical
             }
         }
     }
 
     static getAnimationsNames(type) {
         return Object.keys(SimilarAnimation._getAnimationsDictionary()[type]);
+    }
+
+    getAnimationsNames() {
+        return SimilarAnimation.getAnimationsNames(this.type);
     }
 
     setAnimation(name) {
@@ -437,5 +447,15 @@ class _SimilarAnimationHelpers {
 
     static random(min, max) {
         return Math.random() * (max - min) + min;
+    }
+
+    static getTypeFromSource(s) {
+        let filetype = s.split(".").reverse()[0];
+        if (['png', 'jpg', 'jpeg', 'webp', 'svg', 'gif', 'avif', 'apng', 'bmp', 'ico', 'tiff'].includes(filetype))
+            return 'image'
+        if (['mp4', 'webm', 'ogv'].includes(filetype))
+            return 'video'
+        console.error('Unknown filetype for similar - SOURCE:' + s + '\n FILETYPE:' + filetype);
+        return false
     }
 }
