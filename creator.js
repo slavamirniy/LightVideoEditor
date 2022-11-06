@@ -66,6 +66,8 @@ class SimilarAnimation {
             return this.owner;
         }
 
+        this.reset = () => this.canvas.reset()
+
         canvas.addEventListener("mousemove", function(e) {
             this.owner.dividerMove = false;
             this.owner.dividerPosition = (e.x / canvas.width) * 100;
@@ -78,12 +80,13 @@ class SimilarAnimation {
 
     static of(width, height, source, type) {
         let obj = new SimilarAnimation(width, height, source, type);
-        return obj;
+        return obj.canvas;
     }
 
     static _getAnimationsDictionary(self = {}) {
         return {
             "video": {
+                "none": self._videoShow,
                 "flipVertical": self._flipVerticalAnimation,
                 "flipHorizontal": self._flipHorizontalAnimation,
                 "slowMotion": self._slowAnimation,
@@ -181,7 +184,8 @@ class SimilarAnimation {
 
             if (this.readyState >= 3) {
                 owner.isLoaded = true;
-                owner.animations[owner.animationName](owner);
+                if (owner.animationName)
+                    owner.animations[owner.animationName](owner);
             }
         });
 
@@ -423,6 +427,10 @@ class SimilarAnimation {
 
     _stabilizationAnimation(self) {
         self.strategy = self._stabilizationNextFrame;
+    }
+
+    _videoShow(self) {
+        self.strategy = self._defaultNextFrame;
     }
 
     _imageShow(self) {
