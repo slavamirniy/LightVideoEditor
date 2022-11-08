@@ -59,6 +59,7 @@ class SimilarAnimation {
             this.owner.timers.forEach(timer => {
                 window.clearTimeout(timer);
             });
+            this.owner.timers = []
             this.owner.isStarted = false;
             this.play = this.owner.playStrategy;
             this.owner.ctx.globalAlpha = 1;
