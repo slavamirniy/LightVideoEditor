@@ -12,7 +12,7 @@ class SimilarAnimation {
         this.animations = SimilarAnimation._getAnimationsDictionary(this)[type];
         this.timers = []
 
-        this.animationName = null;
+        this.animationName = "none";
 
         this.pixilatePower = 0.5;
         this.isStarted = false;
@@ -63,6 +63,7 @@ class SimilarAnimation {
             this.owner.isStarted = false;
             this.play = this.owner.playStrategy;
             this.owner.ctx.globalAlpha = 1;
+            this.owner.animationName = "none";
 
             return this.owner;
         }
