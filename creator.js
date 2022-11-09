@@ -125,8 +125,7 @@ class SimilarAnimation {
         }
 
         this.animationName = name;
-        if (this.isLoaded)
-            this.animations[name](this);
+        this.animations[name](this);
         return this.canvas;
     }
 
