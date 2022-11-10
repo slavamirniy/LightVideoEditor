@@ -158,8 +158,9 @@ class SimilarAnimation {
 
         image.show = function() {
             let owner = this.owner;
-            owner.animations[owner.animationName](owner);
+
             owner.strategy(owner.scaledWidth, owner.scaledHeight, owner.ctx);
+            owner.animations[owner.animationName](owner);
         }
     }
 

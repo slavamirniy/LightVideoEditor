@@ -2,7 +2,7 @@
 // .of - создает экземляр SimilarAnimation
 // .setAnimation - устанавливает анимацию и возвращает canvas
 
-let anim = SimilarAnimation.of(500, 500, 'source.mp4');
+let anim = SimilarAnimation.of(500, 500, 'frog.jpg');
 
 document.body.append(anim);
 
@@ -18,7 +18,7 @@ function addBtn(name, method) {
 }
 
 // возвращает список анимаций
-let animations = SimilarAnimation.getAnimationsNames('video');
+let animations = anim.getAnimationsNames();
 
 // возвращает список анимаций для типа файла экземпляра симиляра
 // можно вызывать на любой стадии создания анимации
