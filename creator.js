@@ -73,7 +73,7 @@ class SimilarAnimation {
             this.ctx.restore();
             this.ctx.resetTransform();
             this.ctx.clearRect(0, 0, width, height)
-            this.ctx.filter = ''
+            this.ctx.filter = 'contrast(100%) saturate(100%)'
         }
 
         canvas.addEventListener("mousemove", function(e) {
