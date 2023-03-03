@@ -34,6 +34,7 @@ class SimilarAnimation {
         this.canvas = canvas;
 
         this.ctx = canvas.getContext('2d');
+        this.ctx.save();
 
         this.playStrategy = function() {
             if (this.owner.type == 'video')
@@ -51,7 +52,7 @@ class SimilarAnimation {
         }
 
         this.canvas.reset = function() {
-            this.owner.ctx.reset();
+            this.owner.reset();
             if (this.owner.type == 'video') {
                 this.owner.video.playbackRate = 1;
                 this.owner.video.pause();
@@ -68,7 +69,11 @@ class SimilarAnimation {
             return this.owner;
         }
 
-        this.reset = () => this.canvas.reset()
+        this.reset = () => {
+            this.ctx.restore();
+            this.ctx.resetTransform();
+            this.ctx.clearRect(0, 0, width, height)
+        }
 
         canvas.addEventListener("mousemove", function(e) {
             this.owner.dividerMove = false;
