@@ -2,7 +2,7 @@
 // .of - создает экземляр SimilarAnimation
 // .setAnimation - устанавливает анимацию и возвращает canvas
 
-let anim = SimilarAnimation.of(500, 500, 'source.mp4');
+let anim = SimilarAnimation.of(500, 500, 'frog.jpg');
 
 document.body.append(anim);
 

@@ -1,3 +1,5 @@
+const vectorizer_image = new Image()
+vectorizer_image.src = "/vectorizer.png"
 class SimilarAnimation {
     constructor(width, height, source) {
 
@@ -112,7 +114,8 @@ class SimilarAnimation {
                 "none": self._imageShow,
                 "colorCorrection_0": self._imageColorCorrection,
                 "flipHorizontal": self._imageFlipHorizontal,
-                "flipVertical": self._imageFlipVertical
+                "flipVertical": self._imageFlipVertical,
+                "vectorizer": self._imageVectorizer
             }
         }
     }
@@ -418,6 +421,19 @@ class SimilarAnimation {
         self.strategy = self._defaultShowImage;
     }
 
+    _imageVectorizer(self) {
+        self.ctx.msImageSmoothingEnabled = false;
+        self.ctx.mozImageSmoothingEnabled = false;
+        self.ctx.webkitImageSmoothingEnabled = false;
+        self.ctx.imageSmoothingEnabled = false;
+
+        self.strategy = self._imageVectorizerNextFrame;
+    }
+
+    _imageVectorizerNextFrame(canvasScaledWidth, canvasScaledHeight, ctx) {
+        ctx.drawImage(vectorizer_image, 0, 0, canvasScaledWidth, vectorizer_image.height * canvasScaledWidth / vectorizer_image.width)
+    }
+
     _slowAnimation(self) {
         self.strategy = self._slowNextFrame;
     }
@@ -442,7 +458,6 @@ class SimilarAnimation {
     _imageShow(self) {
         self.strategy = self._defaultShowImage;
     }
-
 }
 
 class _SimilarAnimationHelpers {
