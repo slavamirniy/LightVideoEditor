@@ -437,7 +437,6 @@ class SimilarAnimation {
     }
 
     _imageVectorizer(self) {
-        vectorizer_image.src = "/h.jpg"
         self.strategy = self._imageVectorizerShowImage;
     }
 
