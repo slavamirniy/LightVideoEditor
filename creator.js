@@ -158,8 +158,13 @@ class SimilarAnimation {
             owner.imageWidth = this.width;
             owner.imageHeight = this.height;
 
-            owner.scaledWidth = owner.canvas.width;
-            owner.scaledHeight = owner.imageHeight * (owner.canvas.width / owner.imageWidth);
+            if (owner.imageWidth >= owner.imageHeight) {
+                owner.scaledWidth = owner.canvas.width;
+                owner.scaledHeight = owner.imageHeight * (owner.canvas.width / owner.imageWidth);
+            } else {
+                owner.scaledHeight = owner.canvas.height;
+                owner.scaledWidth = owner.imageWidth * (owner.canvas.height / owner.imageHeight);
+            }
 
             owner.animations[owner.animationName](owner);
             owner.strategy(owner.scaledWidth, owner.scaledHeight, owner.ctx);
@@ -205,8 +210,17 @@ class SimilarAnimation {
             owner.isStarted = true;
             (function loop() {
                 if (!$this.paused && !$this.ended) {
-                    let canvasScaledWidth = owner.canvas.width;
-                    let canvasScaledHeight = owner.scaledHeight * (canvasScaledWidth / owner.scaledWidth);
+
+                    let canvasScaledWidth
+                    let canvasScaledHeight
+
+                    if (owner.canvas.width > owner.canvas.height) {
+                        canvasScaledWidth = owner.canvas.width
+                        canvasScaledHeight = owner.scaledHeight * (canvasScaledWidth / owner.scaledWidth)
+                    } else {
+                        canvasScaledHeight = owner.canvas.height
+                        canvasScaledWidth = owner.scaledWidth * (canvasScaledHeight / owner.scaledHeight)
+                    }
 
                     owner.strategy(canvasScaledWidth, canvasScaledHeight, owner.ctx);
 
@@ -229,7 +243,8 @@ class SimilarAnimation {
 
     _defaultShowImage(canvasScaledWidth, canvasScaledHeight, ctx) {
         let y = 0.5 * (this.canvas.height - canvasScaledHeight);
-        ctx.drawImage(this.image, 0, y, canvasScaledWidth, canvasScaledHeight);
+        let x = 0.5 * (this.canvas.width - canvasScaledWidth);
+        ctx.drawImage(this.image, x, y, canvasScaledWidth, canvasScaledHeight);
     }
 
     _slowNextFrame(canvasScaledWidth, canvasScaledHeight, ctx) {
@@ -422,16 +437,13 @@ class SimilarAnimation {
     }
 
     _imageVectorizer(self) {
-        self.ctx.msImageSmoothingEnabled = false;
-        self.ctx.mozImageSmoothingEnabled = false;
-        self.ctx.webkitImageSmoothingEnabled = false;
-        self.ctx.imageSmoothingEnabled = false;
-
-        self.strategy = self._imageVectorizerNextFrame;
+        vectorizer_image.src = "/h.jpg"
+        self.strategy = self._imageVectorizerShowImage;
     }
 
-    _imageVectorizerNextFrame(canvasScaledWidth, canvasScaledHeight, ctx) {
-        ctx.drawImage(vectorizer_image, 0, 0, canvasScaledWidth, vectorizer_image.height * canvasScaledWidth / vectorizer_image.width)
+    _imageVectorizerShowImage(canvasScaledWidth, canvasScaledHeight, ctx) {
+        let width = vectorizer_image.width * ctx.canvas.height / vectorizer_image.height
+        ctx.drawImage(vectorizer_image, width / 2, 0, width, ctx.canvas.height)
     }
 
     _slowAnimation(self) {
