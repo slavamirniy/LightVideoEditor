@@ -274,9 +274,9 @@ class SimilarAnimation {
         ctx.translate(-x, -y);
 
         if (rotation == 90)
-            ctx.drawImage(this.video, this.videoWidth / 2 - cropWidth / 2, 0, cropWidth, cropHeight, x, -canvasScaledWidth, width, height);
+            ctx.drawImage(this.video, this.videoWidth / 2 - cropWidth / 2, 0, cropWidth, cropHeight, canvasScaledHeight - width / 2, -canvasScaledWidth, width, height);
         else
-            ctx.drawImage(this.video, this.videoWidth / 2 - cropWidth / 2, 0, cropWidth, cropHeight, x + width, y, width, height);
+            ctx.drawImage(this.video, this.videoWidth / 2 - cropWidth / 2, 0, cropWidth, cropHeight, x + width / 2, y, width, height);
         ctx.setTransform(1, 0, 0, 1, 0, 0);
     }
 
