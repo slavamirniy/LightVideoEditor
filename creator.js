@@ -158,13 +158,12 @@ class SimilarAnimation {
             owner.imageWidth = this.width;
             owner.imageHeight = this.height;
 
-            if (owner.imageWidth >= owner.imageHeight) {
-                owner.scaledWidth = owner.canvas.width;
-                owner.scaledHeight = owner.imageHeight * (owner.canvas.width / owner.imageWidth);
-            } else {
-                owner.scaledHeight = owner.canvas.height;
-                owner.scaledWidth = owner.imageWidth * (owner.canvas.height / owner.imageHeight);
-            }
+            var hRatio = owner.canvas.width / this.width;
+            var vRatio = owner.canvas.height / this.height;
+            var ratio = Math.min(hRatio, vRatio);
+
+            owner.scaledWidth = this.width * ratio;
+            owner.scaledHeight = this.height * ratio;
 
             owner.animations[owner.animationName](owner);
             owner.strategy(owner.scaledWidth, owner.scaledHeight, owner.ctx);
@@ -214,13 +213,12 @@ class SimilarAnimation {
                     let canvasScaledWidth
                     let canvasScaledHeight
 
-                    if (owner.canvas.width > owner.canvas.height) {
-                        canvasScaledWidth = owner.canvas.width
-                        canvasScaledHeight = owner.scaledHeight * (canvasScaledWidth / owner.scaledWidth)
-                    } else {
-                        canvasScaledHeight = owner.canvas.height
-                        canvasScaledWidth = owner.scaledWidth * (canvasScaledHeight / owner.scaledHeight)
-                    }
+                    var hRatio = owner.canvas.width / owner.scaledWidth;
+                    var vRatio = owner.canvas.height / owner.scaledHeight;
+                    var ratio = Math.min(hRatio, vRatio);
+
+                    canvasScaledWidth = owner.scaledWidth * ratio
+                    canvasScaledHeight = owner.scaledHeight * ratio
 
                     owner.strategy(canvasScaledWidth, canvasScaledHeight, owner.ctx);
 
@@ -238,7 +236,8 @@ class SimilarAnimation {
 
     _defaultNextFrame(canvasScaledWidth, canvasScaledHeight, ctx) {
         let y = 0.5 * (this.canvas.height - canvasScaledHeight);
-        ctx.drawImage(this.video, 0, y, canvasScaledWidth, canvasScaledHeight);
+        let x = 0.5 * (this.canvas.width - canvasScaledWidth);
+        ctx.drawImage(this.video, x, y, canvasScaledWidth, canvasScaledHeight);
     }
 
     _defaultShowImage(canvasScaledWidth, canvasScaledHeight, ctx) {
@@ -251,43 +250,53 @@ class SimilarAnimation {
         ctx.globalAlpha = 0.2
         this.video.playbackRate = 0.3
         let y = 0.5 * (this.canvas.height - canvasScaledHeight);
-        ctx.drawImage(this.video, 0, y, canvasScaledWidth, canvasScaledHeight);
+        let x = 0.5 * (this.canvas.width - canvasScaledWidth);
+        ctx.drawImage(this.video, x, y, canvasScaledWidth, canvasScaledHeight);
     }
 
     _verticalCropNextFrame(canvasScaledWidth, canvasScaledHeight, ctx, rotation = 0) {
-        let height = this.canvas.height;
+        let height = canvasScaledHeight;
         let width = height * 9 / 16;
 
         let cropWidth = this.videoHeight * (9 / 16);
         let cropHeight = this.videoHeight;
 
         if (rotation == 90 || rotation == 270)
-            height = [this.canvas.width, width = height * width / this.canvas.width][0]
+            height = [canvasScaledWidth, width = canvasScaledWidth * 9 / 16][0]
 
-        let x = this.canvas.width / 2 - height * 9 / 16 / 2
-        let centerX = this.canvas.width / 2;
-        let centerY = this.canvas.height / 2;
+        let y = 0.5 * (this.canvas.height - canvasScaledHeight);
+        let x = 0.5 * (this.canvas.width - canvasScaledWidth);
 
-        ctx.translate(centerX, centerY);
-        ctx.rotate(rotation * Math.PI / 180);
-        ctx.translate(-centerX, -centerY);
-        ctx.drawImage(this.video, this.videoWidth / 2 - cropWidth / 2, 0, cropWidth, cropHeight,
-            centerX - width / 2, centerY - height / 2, width, height);
+
+        const rot = rotation * Math.PI / 180
+        ctx.translate(x, y);
+        ctx.rotate(rot);
+        ctx.translate(-x, -y);
+
+        if (rotation == 90)
+            ctx.drawImage(this.video, this.videoWidth / 2 - cropWidth / 2, 0, cropWidth, cropHeight, x, -canvasScaledWidth, width, height);
+        else
+            ctx.drawImage(this.video, this.videoWidth / 2 - cropWidth / 2, 0, cropWidth, cropHeight, x + width, y, width, height);
         ctx.setTransform(1, 0, 0, 1, 0, 0);
     }
 
     _horizontalCropNextFrame(canvasScaledWidth, canvasScaledHeight, ctx) {
-        let height = this.canvas.width * 9 / 16;
-        let width = this.canvas.width;
+        let height = this.videoHeight * 9 / 16;
 
-        let cropWidth = this.videoWidth;
-        let cropHeight = this.videoWidth * (9 / 16);
+        var hRatio = this.canvas.width / this.videoWidth;
+        var vRatio = this.canvas.height / height;
+        var ratio = Math.min(hRatio, vRatio);
 
-        let centerX = this.canvas.width / 2;
-        let centerY = this.canvas.height / 2;
+        let w = this.videoWidth * ratio
+        let h = height * ratio
 
-        ctx.drawImage(this.video, this.videoWidth / 2 - cropWidth / 2, 0, cropWidth, cropHeight,
-            centerX - width / 2, centerY - height / 2, width, height);
+        let y = 0.5 * (this.canvas.height - h);
+        let x = 0.5 * (this.canvas.width - w);
+
+        console.log(w, h)
+
+        ctx.drawImage(this.video, 0, this.videoHeight / 2 - height / 2, this.videoWidth, height,
+            x, y, w, h);
     }
 
     _getDivider() {
@@ -307,20 +316,22 @@ class SimilarAnimation {
 
     _drawDivider(div, canvasScaledWidth, canvasScaledHeight, ctx) {
         let y = 0.5 * (this.canvas.height - canvasScaledHeight);
+        let x = 0.5 * (this.canvas.width - canvasScaledWidth);
 
         ctx.globalAlpha = 0.5;
         ctx.fillStyle = 'black';
-        ctx.fillRect(canvasScaledWidth * div.left, y, 2, canvasScaledHeight);
+        ctx.fillRect(canvasScaledWidth * div.left + x, y, 2, canvasScaledHeight);
         ctx.globalAlpha = 1;
     }
 
     _drawDividedImage(left, canvasScaledWidth, canvasScaledHeight, ctx) {
         let div = this._getDivider();
         let y = 0.5 * (this.canvas.height - canvasScaledHeight);
-        if (left)
-            ctx.drawImage(this.video, 0, 0, this.videoWidth * div.left, this.videoHeight, 0, y, canvasScaledWidth * div.left, canvasScaledHeight);
-        else {
-            ctx.drawImage(this.video, this.videoWidth * div.left, 0, this.videoWidth * div.right, this.videoHeight, canvasScaledWidth * div.left, y, canvasScaledWidth * div.right, canvasScaledHeight);
+        let x = 0.5 * (this.canvas.width - canvasScaledWidth);
+        if (left) {
+            ctx.drawImage(this.video, 0, 0, this.videoWidth * div.left, this.videoHeight, x, y, canvasScaledWidth * div.left, canvasScaledHeight);
+        } else {
+            ctx.drawImage(this.video, this.videoWidth * div.left, 0, this.videoWidth * div.right, this.videoHeight, canvasScaledWidth * div.left + x, y, canvasScaledWidth * div.right, canvasScaledHeight);
             this._drawDivider(div, canvasScaledWidth, canvasScaledHeight, ctx);
         }
     }
@@ -335,7 +346,8 @@ class SimilarAnimation {
     _noiseNextFrame(canvasScaledWidth, canvasScaledHeight, ctx) {
         let div = this._getDivider();
         let y = 0.5 * (this.canvas.height - canvasScaledHeight);
-        _SimilarAnimationHelpers.generateNoise(ctx, 0, y, canvasScaledWidth * div.left, canvasScaledHeight);
+        let x = 0.5 * (this.canvas.width - canvasScaledWidth);
+        _SimilarAnimationHelpers.generateNoise(ctx, x, y, canvasScaledWidth * div.left, canvasScaledHeight);
         ctx.globalAlpha = 0.8;
         this._defaultNextFrame(canvasScaledWidth, canvasScaledHeight, ctx);
         this._drawDivider(div, canvasScaledWidth, canvasScaledHeight, ctx);
@@ -344,8 +356,9 @@ class SimilarAnimation {
     _stabilizationNextFrame(canvasScaledWidth, canvasScaledHeight, ctx) {
         let div = this._getDivider();
         let y = 0.5 * (this.canvas.height - canvasScaledHeight);
-        ctx.drawImage(this.video, (Math.sin(Date.now() / 300)) * 10, (Math.cos(Date.now() / 250)) * 7, this.videoWidth * div.left, this.videoHeight - 10, 0, y, canvasScaledWidth * div.left, canvasScaledHeight);
-        ctx.drawImage(this.video, this.videoWidth * div.left + 10, 10, this.videoWidth * div.right - 10, this.videoHeight - 10, canvasScaledWidth * div.left, y, canvasScaledWidth * div.right, canvasScaledHeight);
+        let x = 0.5 * (this.canvas.width - canvasScaledWidth);
+        ctx.drawImage(this.video, (Math.sin(Date.now() / 300)) * 10, (Math.cos(Date.now() / 250)) * 7, this.videoWidth * div.left, this.videoHeight - 10, x, y, canvasScaledWidth * div.left, canvasScaledHeight);
+        ctx.drawImage(this.video, this.videoWidth * div.left + 10, 10, this.videoWidth * div.right - 10, this.videoHeight - 10, canvasScaledWidth * div.left + x, y, canvasScaledWidth * div.right, canvasScaledHeight);
         this._drawDivider(div, canvasScaledWidth, canvasScaledHeight, ctx);
     }
 
@@ -471,18 +484,33 @@ class SimilarAnimation {
     }
 }
 
+let cashedNoise = {}
+
 class _SimilarAnimationHelpers {
+    static getNoiseFramesCount() {
+        return 5
+    }
+
     static generateNoise(ctx, x, y, w, h) {
-        let idata = ctx.createImageData(w, h)
+        const d = w + "|" + h;
+        if (d in cashedNoise) {
+            const draw_data = cashedNoise[d][Math.floor(Math.random() * _SimilarAnimationHelpers.getNoiseFramesCount())]
+            ctx.putImageData(draw_data, x, y);
+            return
+        }
+        cashedNoise[d] = []
+        for (let i = _SimilarAnimationHelpers.getNoiseFramesCount(); i > 0; i--) {
+            let idata = ctx.createImageData(w, h)
+            let buffer32 = new Uint32Array(idata.data.buffer),
+                buffer_len = buffer32.length,
+                i = 0
 
-        let buffer32 = new Uint32Array(idata.data.buffer),
-            buffer_len = buffer32.length,
-            i = 0
-
-        for (; i < buffer_len; i++)
-            buffer32[i] =
-            ((255 * Math.random()) | 0) << 24;
-        ctx.putImageData(idata, x, y);
+            for (; i < buffer_len; i++)
+                buffer32[i] =
+                ((255 * Math.random()) | 0) << 24;
+            cashedNoise[d].push(idata)
+        }
+        this.generateNoise(ctx, x, y, w, h)
     }
 
     static random(min, max) {
