@@ -107,6 +107,7 @@ class SimilarAnimation {
                 "upscale": self._upscaleAnimation,
                 "toVertical": self._toVerticalAnimation,
                 "toVerticalRotate90": self._toVerticalRotate90Animation,
+                "toVerticalRotate270": self._toVerticalRotate270Animation,
                 "toHorizontal": self._toHorizontalAnimation,
                 "colorCorrection_0": self._colorAnimation,
                 "noiseAnimation": self._noiseAnimation,
@@ -117,7 +118,11 @@ class SimilarAnimation {
                 "colorCorrection_0": self._imageColorCorrection,
                 "flipHorizontal": self._imageFlipHorizontal,
                 "flipVertical": self._imageFlipVertical,
-                "vectorizer": self._imageVectorizer
+                "vectorizer": self._imageVectorizer,
+                "upscale": self._imageUpscale,
+                "toVertical": self._imageToVertical,
+                "rotate90": self._imageRotate90,
+                "rotate270": self._imageRotate270
             }
         }
     }
@@ -270,7 +275,7 @@ class SimilarAnimation {
         let x = 0.5 * (this.canvas.width - w);
 
         const rot = rotation * Math.PI / 180
-        if (rotation == 90) {
+        if (rotation == 90 || rotation == 270) {
             ctx.setTransform(1, 0, 0, 1, this.canvas.width / 2, this.canvas.height / 2);
             ctx.rotate(rot);
             ratio = Math.min(this.canvas.width / h, this.canvas.height / w);
@@ -367,6 +372,10 @@ class SimilarAnimation {
         this._verticalCropNextFrame(canvasScaledWidth, canvasScaledHeight, ctx, 90);
     }
 
+    _cropVerticalRotate270NextFrame(canvasScaledWidth, canvasScaledHeight, ctx) {
+        this._verticalCropNextFrame(canvasScaledWidth, canvasScaledHeight, ctx, 270);
+    }
+
     _upscaleAnimation(self) {
         self.strategy = self._blurNextFrame;
     }
@@ -385,6 +394,10 @@ class SimilarAnimation {
 
     _toVerticalRotate90Animation(self) {
         self.strategy = self._cropVerticalRotate90NextFrame;
+    }
+
+    _toVerticalRotate270Animation(self) {
+        self.strategy = self._cropVerticalRotate270NextFrame;
     }
 
     _getFramesAnimation(self) {
@@ -457,6 +470,70 @@ class SimilarAnimation {
     _imageVectorizerShowImage(canvasScaledWidth, canvasScaledHeight, ctx) {
         let width = vectorizer_image.width * ctx.canvas.height / vectorizer_image.height
         ctx.drawImage(vectorizer_image, width / 2, 0, width, ctx.canvas.height)
+    }
+
+    _imageUpscale(self) {
+        self.strategy = self._blurShowImage;
+    }
+
+    _blurShowImage(canvasScaledWidth, canvasScaledHeight, ctx) {
+        let y = 0.5 * (this.canvas.height - canvasScaledHeight);
+        let x = 0.5 * (this.canvas.width - canvasScaledWidth);
+
+        ctx.filter = 'blur(2px)'
+        ctx.drawImage(this.image, 0, 0, this.image.width / 2, this.image.height, x, y, canvasScaledWidth / 2, canvasScaledHeight);
+        ctx.filter = 'blur(0px)'
+        ctx.drawImage(this.image, this.image.width / 2, 0, this.image.width / 2, this.image.height, x + canvasScaledWidth / 2, y, canvasScaledWidth / 2, canvasScaledHeight);
+        this._drawDivider({ left: 0.5 }, canvasScaledWidth, canvasScaledHeight, ctx);
+    }
+
+    _imageToVertical(self) {
+        self.strategy = self._toVerticalShowImage;
+    }
+
+    _toVerticalShowImage(canvasScaledWidth, canvasScaledHeight, ctx) {
+        let height = this.image.height;
+        let width = height * 9 / 16;
+
+        let hRatio = this.canvas.width / width;
+        let vRatio = this.canvas.height / height;
+        let ratio = Math.min(hRatio, vRatio);
+
+        let w = width * ratio
+        let h = this.image.height * ratio
+        let y = 0.5 * (this.canvas.height - h);
+        let x = 0.5 * (this.canvas.width - w);
+        ctx.drawImage(this.image, this.image.width / 2 - width / 2, 0, width, height, x, y, w, h);
+    }
+
+    _imageRotate90(self) {
+        const rot = 90 * Math.PI / 180
+        self.ctx.setTransform(1, 0, 0, 1, self.canvas.width / 2, self.canvas.height / 2);
+        self.ctx.rotate(rot);
+        self.strategy = self._rotatetedShowImage;
+    }
+
+    _rotatetedShowImage(canvasScaledWidth, canvasScaledHeight, ctx) {
+        let height = this.image.height;
+        let width = this.image.width;
+
+        let hRatio = this.canvas.width / width;
+        let vRatio = this.canvas.height / height;
+        let ratio = Math.min(hRatio, vRatio);
+
+        let w = width * ratio
+        let h = height * ratio
+        let y = 0.5 * (this.canvas.height - h);
+
+        ratio = Math.min(this.canvas.width / h, this.canvas.height / w);
+        ctx.drawImage(this.image, -y - w * ratio / 2, -h * ratio / 2, w * ratio, h * ratio);
+    }
+
+    _imageRotate270(self) {
+        const rot = 270 * Math.PI / 180
+        self.ctx.setTransform(1, 0, 0, 1, self.canvas.width / 2, self.canvas.height / 2);
+        self.ctx.rotate(rot);
+        self.strategy = self._rotatetedShowImage;
     }
 
     _slowAnimation(self) {
