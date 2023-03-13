@@ -158,9 +158,9 @@ class SimilarAnimation {
             owner.imageWidth = this.width;
             owner.imageHeight = this.height;
 
-            var hRatio = owner.canvas.width / this.width;
-            var vRatio = owner.canvas.height / this.height;
-            var ratio = Math.min(hRatio, vRatio);
+            let hRatio = owner.canvas.width / this.width;
+            let vRatio = owner.canvas.height / this.height;
+            let ratio = Math.min(hRatio, vRatio);
 
             owner.scaledWidth = this.width * ratio;
             owner.scaledHeight = this.height * ratio;
@@ -213,9 +213,9 @@ class SimilarAnimation {
                     let canvasScaledWidth
                     let canvasScaledHeight
 
-                    var hRatio = owner.canvas.width / owner.scaledWidth;
-                    var vRatio = owner.canvas.height / owner.scaledHeight;
-                    var ratio = Math.min(hRatio, vRatio);
+                    let hRatio = owner.canvas.width / owner.scaledWidth;
+                    let vRatio = owner.canvas.height / owner.scaledHeight;
+                    let ratio = Math.min(hRatio, vRatio);
 
                     canvasScaledWidth = owner.scaledWidth * ratio
                     canvasScaledHeight = owner.scaledHeight * ratio
@@ -255,37 +255,36 @@ class SimilarAnimation {
     }
 
     _verticalCropNextFrame(canvasScaledWidth, canvasScaledHeight, ctx, rotation = 0) {
-        let height = canvasScaledHeight;
+        let height = this.videoHeight;
         let width = height * 9 / 16;
 
-        let cropWidth = this.videoHeight * (9 / 16);
-        let cropHeight = this.videoHeight;
+        let hRatio = this.canvas.width / width;
+        let vRatio = this.canvas.height / height;
+        let ratio = Math.min(hRatio, vRatio);
 
-        if (rotation == 90 || rotation == 270)
-            height = [canvasScaledWidth, width = canvasScaledWidth * 9 / 16][0]
-
-        let y = 0.5 * (this.canvas.height - canvasScaledHeight);
-        let x = 0.5 * (this.canvas.width - canvasScaledWidth);
-
+        let w = width * ratio
+        let h = this.videoHeight * ratio
+        let y = 0.5 * (this.canvas.height - h);
+        let x = 0.5 * (this.canvas.width - w);
 
         const rot = rotation * Math.PI / 180
-        ctx.translate(x, y);
-        ctx.rotate(rot);
-        ctx.translate(-x, -y);
-
-        if (rotation == 90)
-            ctx.drawImage(this.video, this.videoWidth / 2 - cropWidth / 2, 0, cropWidth, cropHeight, canvasScaledHeight - width / 2, -canvasScaledWidth, width, height);
-        else
-            ctx.drawImage(this.video, this.videoWidth / 2 - cropWidth / 2, 0, cropWidth, cropHeight, x + width / 2, y, width, height);
+        if (rotation == 90) {
+            ctx.setTransform(1, 0, 0, 1, this.canvas.width / 2, this.canvas.height / 2);
+            ctx.rotate(rot);
+            ratio = Math.min(this.canvas.width / h, this.canvas.height / w);
+            ctx.drawImage(this.video, this.videoWidth / 2 - width / 2, 0, width, height, -y - w * ratio / 2, -h * ratio / 2, w * ratio, h * ratio);
+        }
+        if (rotation == 0)
+            ctx.drawImage(this.video, this.videoWidth / 2 - width / 2, 0, width, height, x, y, w, h);
         ctx.setTransform(1, 0, 0, 1, 0, 0);
     }
 
     _horizontalCropNextFrame(canvasScaledWidth, canvasScaledHeight, ctx) {
         let height = this.videoHeight * 9 / 16;
 
-        var hRatio = this.canvas.width / this.videoWidth;
-        var vRatio = this.canvas.height / height;
-        var ratio = Math.min(hRatio, vRatio);
+        let hRatio = this.canvas.width / this.videoWidth;
+        let vRatio = this.canvas.height / height;
+        let ratio = Math.min(hRatio, vRatio);
 
         let w = this.videoWidth * ratio
         let h = height * ratio
