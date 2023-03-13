@@ -90,8 +90,8 @@ class SimilarAnimation {
         })
     }
 
-    static of(width, height, source, type) {
-        let obj = new SimilarAnimation(width, height, source, type);
+    static of(width, height, source, images_path) {
+        let obj = new SimilarAnimation(width, height, source, images_path);
         return obj.canvas;
     }
 
