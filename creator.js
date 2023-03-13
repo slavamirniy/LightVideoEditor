@@ -1,7 +1,9 @@
 const vectorizer_image = new Image()
 vectorizer_image.src = "/vectorizer.png"
 class SimilarAnimation {
-    constructor(width, height, source) {
+    constructor(width, height, source, vectorizer_source) {
+
+        vectorizer_image.src = vectorizer_source || "/vectorizer.png"
 
         let type = _SimilarAnimationHelpers.getTypeFromSource(source);
         if (type == null)
