@@ -82,7 +82,14 @@ class SimilarAnimation {
 
         canvas.addEventListener("mousemove", function(e) {
             this.owner.dividerMove = false;
-            this.owner.dividerPosition = (e.x / canvas.width) * 100;
+            let mouseX;
+
+            if (e.offsetX) {
+                mouseX = e.offsetX;
+            } else if (e.layerX) {
+                mouseX = e.layerX;
+            }
+            this.owner.dividerPosition = (mouseX / canvas.width) * 100;
         })
 
         canvas.addEventListener("mouseout", function(e) {
