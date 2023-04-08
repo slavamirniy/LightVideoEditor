@@ -1,9 +1,11 @@
 const vectorizer_image = new Image()
+const greenscreen_image = new Image()
 
 class SimilarAnimation {
-    constructor(width, height, source, images_path = { vectorizer: "/vectorizer.png" }) {
+    constructor(width, height, source, images_path = { vectorizer: "/vectorizer.png", greenscreen: "/greenscreen.png" }) {
 
-        vectorizer_image.src = images_path.vectorizer || vectorizer_image.src
+        vectorizer_image.src = images_path.vectorizer
+        greenscreen_image.src = images_path.greenscreen
 
         let type = _SimilarAnimationHelpers.getTypeFromSource(source);
         if (type == null)
@@ -118,7 +120,8 @@ class SimilarAnimation {
                 "toHorizontal": self._toHorizontalAnimation,
                 "colorCorrection_0": self._colorAnimation,
                 "noiseAnimation": self._noiseAnimation,
-                "stabilizationAnimation": self._stabilizationAnimation
+                "stabilizationAnimation": self._stabilizationAnimation,
+                "greenscreenBackground": self._greenscreenBackgroundAnimation
             },
             "image": {
                 "none": self._imageShow,
@@ -129,7 +132,8 @@ class SimilarAnimation {
                 "upscale": self._imageUpscale,
                 "toVertical": self._imageToVertical,
                 "rotate90": self._imageRotate90,
-                "rotate270": self._imageRotate270
+                "rotate270": self._imageRotate270,
+                "greenscreenBackground": self._imageGreenscreenBackground
             }
         }
     }
@@ -407,6 +411,10 @@ class SimilarAnimation {
         self.strategy = self._cropVerticalRotate270NextFrame;
     }
 
+    _greenscreenBackgroundAnimation(self) {
+        self.strategy = self._imageGreenscreenShowImage;
+    }
+
     _getFramesAnimation(self) {
         self.video.pause();
 
@@ -541,6 +549,15 @@ class SimilarAnimation {
         self.ctx.setTransform(1, 0, 0, 1, self.canvas.width / 2, self.canvas.height / 2);
         self.ctx.rotate(rot);
         self.strategy = self._rotatetedShowImage;
+    }
+
+    _imageGreenscreenBackground(self) {
+        self.strategy = self._imageGreenscreenShowImage;
+    }
+
+    _imageGreenscreenShowImage(canvasScaledWidth, canvasScaledHeight, ctx) {
+        const ratio = Math.min(this.canvas.width / greenscreen_image.width, this.canvas.height / greenscreen_image.height);
+        ctx.drawImage(greenscreen_image, greenscreen_image.width * ratio / 2, this.canvas.height / 2 - greenscreen_image.height * ratio / 2, greenscreen_image.width * ratio, greenscreen_image.height * ratio);
     }
 
     _slowAnimation(self) {
