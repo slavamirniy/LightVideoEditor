@@ -78,9 +78,45 @@ class SimilarAnimation {
         this.reset = () => {
             this.ctx.restore();
             this.ctx.resetTransform();
+            this.timers.forEach(timer => {
+                window.clearTimeout(timer);
+            });
+            this.timers = []
             this.ctx.clearRect(0, 0, width, height)
             this.ctx.filter = 'contrast(100%) saturate(100%)'
+
+            return this
         }
+
+        this.showFrame = function(s) {
+            if (this.type != 'video') {
+                console.error("Trying to show frame of not video")
+                return
+            }
+
+            this.reset()
+            this.video.pause()
+            this.video.currentTime = s
+            this.strategy = this._videoShow
+
+            let canvasScaledWidth
+            let canvasScaledHeight
+
+            let hRatio = this.canvas.width / this.scaledWidth;
+            let vRatio = this.canvas.height / this.scaledHeight;
+            let ratio = Math.min(hRatio, vRatio);
+
+            canvasScaledWidth = this.scaledWidth * ratio
+            canvasScaledHeight = this.scaledHeight * ratio
+
+            this.video.onseeked = () => {
+                this._defaultNextFrame(canvasScaledWidth, canvasScaledHeight, this.ctx)
+                this.video.onseeked = null
+            }
+
+        }
+
+        this.canvas.showFrame = (s) => this.showFrame(s)
 
         canvas.addEventListener("mousemove", function(e) {
             this.owner.dividerMove = false;
