@@ -2,7 +2,7 @@
 // .of - создает экземляр SimilarAnimation
 // .setAnimation - устанавливает анимацию и возвращает canvas
 
-let anim = SimilarAnimation.of(500, 500, 'frog.jpg');
+let anim = SimilarAnimation.of(600, 300, '/source.mp4');
 
 document.body.append(anim);
 
@@ -30,5 +30,8 @@ let animationsFromObject = anim.getAnimationsNames();
 animations.forEach(name => {
     addBtn(name, () => anim.reset().setAnimation(name).play());
 });
+
+addBtn("to 5s", () => anim.showFrame(5))
+addBtn("to 10s", () => anim.showFrame(10))
 
 addBtn("Remove", () => anim.destroy());
