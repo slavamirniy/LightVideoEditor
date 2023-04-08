@@ -1,5 +1,5 @@
 const vectorizer_image = new Image()
-vectorizer_image.src = "/vectorizer.png"
+
 class SimilarAnimation {
     constructor(width, height, source, images_path = { vectorizer: "/vectorizer.png" }) {
 
