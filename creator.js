@@ -118,6 +118,27 @@ class SimilarAnimation {
 
         this.canvas.showFrame = (s) => this.showFrame(s)
 
+        this.showFramePercent = function(percent) {
+            if (this.type != 'video') {
+                console.error("Trying to show frame of not video")
+                return
+            }
+
+            if (this.video.readyState >= 3) {
+                this.showFrame(this.video.duration * percent / 100)
+                return
+            }
+
+            this.video.addEventListener('loadeddata', (e) => {
+                if (e.target.readyState >= 3) {
+                    e.target.owner.showFrame(e.target.duration * percent / 100)
+                }
+            });
+        }
+
+        this.canvas.showFramePercent = (percent) => this.showFramePercent(percent)
+
+
         canvas.addEventListener("mousemove", function(e) {
             this.owner.dividerMove = false;
             let mouseX;

@@ -31,7 +31,10 @@ animations.forEach(name => {
     addBtn(name, () => anim.reset().setAnimation(name).play());
 });
 
-addBtn("to 5s", () => anim.showFrame(5))
-addBtn("to 10s", () => anim.showFrame(10))
+addBtn("to 0%", () => anim.showFramePercent(0))
+addBtn("to 25%", () => anim.showFramePercent(25))
+addBtn("to 50%", () => anim.showFramePercent(50))
+addBtn("to 75%", () => anim.showFramePercent(75))
+addBtn("to 100%", () => anim.showFramePercent(100))
 
 addBtn("Remove", () => anim.destroy());
