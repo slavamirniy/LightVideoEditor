@@ -178,7 +178,11 @@ class SimilarAnimation {
                 "colorCorrection_0": self._colorAnimation,
                 "noiseAnimation": self._noiseAnimation,
                 "stabilizationAnimation": self._stabilizationAnimation,
-                "greenscreenBackground": self._greenscreenBackgroundAnimation
+                "greenscreenBackground": self._greenscreenBackgroundAnimation,
+                "frame25": () => self.showFramePercent(25),
+                "frame50": () => self.showFramePercent(50),
+                "frame75": () => self.showFramePercent(75),
+                "frame100": () => self.showFramePercent(100),
             },
             "image": {
                 "none": self._imageShow,
@@ -613,8 +617,8 @@ class SimilarAnimation {
     }
 
     _imageGreenscreenShowImage(canvasScaledWidth, canvasScaledHeight, ctx) {
-        const ratio = Math.min(this.canvas.width / greenscreen_image.width, this.canvas.height / greenscreen_image.height);
-        ctx.drawImage(greenscreen_image, greenscreen_image.width * ratio / 2, this.canvas.height / 2 - greenscreen_image.height * ratio / 2, greenscreen_image.width * ratio, greenscreen_image.height * ratio);
+        let width = greenscreen_image.width * ctx.canvas.height / greenscreen_image.height
+        ctx.drawImage(greenscreen_image, ctx.canvas.width / 2 - width / 2, 0, width, ctx.canvas.height)
     }
 
     _slowAnimation(self) {
