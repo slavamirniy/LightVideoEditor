@@ -89,52 +89,59 @@ class SimilarAnimation {
         }
 
         this.showFrame = function(s, clearPrevious = true) {
-            if (this.type != 'video') {
-                console.error("Trying to show frame of not video")
-                return
-            }
+            return new Promise((res) => {
+                if (this.type != 'video') {
+                    console.error("Trying to show frame of not video")
+                    res()
+                    return
+                }
 
-            if (clearPrevious)
-                this.reset()
-            this.video.pause()
-            this.video.currentTime = s
-            this.strategy = this._videoShow
+                if (clearPrevious)
+                    this.reset()
+                this.video.pause()
+                this.video.currentTime = s
+                this.strategy = this._videoShow
 
-            let canvasScaledWidth
-            let canvasScaledHeight
+                let canvasScaledWidth
+                let canvasScaledHeight
 
-            let hRatio = this.canvas.width / this.scaledWidth;
-            let vRatio = this.canvas.height / this.scaledHeight;
-            let ratio = Math.min(hRatio, vRatio);
+                let hRatio = this.canvas.width / this.scaledWidth;
+                let vRatio = this.canvas.height / this.scaledHeight;
+                let ratio = Math.min(hRatio, vRatio);
 
-            canvasScaledWidth = this.scaledWidth * ratio
-            canvasScaledHeight = this.scaledHeight * ratio
+                canvasScaledWidth = this.scaledWidth * ratio
+                canvasScaledHeight = this.scaledHeight * ratio
 
-            this.video.onseeked = () => {
-                this._defaultNextFrame(canvasScaledWidth, canvasScaledHeight, this.ctx)
-                this.video.onseeked = null
-            }
+                this.video.onseeked = () => {
+                    this._defaultNextFrame(canvasScaledWidth, canvasScaledHeight, this.ctx)
+                    this.video.onseeked = null
+                    res()
+                }
+            })
 
         }
 
         this.canvas.showFrame = (s, cp = true) => this.showFrame(s, cp)
 
         this.showFramePercent = function(percent, clearPrevious = true) {
-            if (this.type != 'video') {
-                console.error("Trying to show frame of not video")
-                return
-            }
-
-            if (this.video.readyState >= 3) {
-                this.showFrame(this.video.duration * percent / 100, clearPrevious)
-                return
-            }
-
-            this.video.addEventListener('loadeddata', (e) => {
-                if (e.target.readyState >= 3) {
-                    e.target.owner.showFrame(e.target.duration * percent / 100, clearPrevious)
+            return new Promise((res) => {
+                if (this.type != 'video') {
+                    console.error("Trying to show frame of not video")
+                    res()
+                    return
                 }
-            });
+
+                if (this.video.readyState >= 3) {
+                    this.showFrame(this.video.duration * percent / 100, clearPrevious).then(_ => res())
+                    return
+                }
+
+                this.video.addEventListener('loadeddata', (e) => {
+                    if (e.target.readyState >= 3) {
+                        e.target.owner.showFrame(e.target.duration * percent / 100, clearPrevious).then(_ => res())
+                    }
+                });
+            })
         }
 
         this.canvas.showFramePercent = (percent, cp = true) => this.showFramePercent(percent, cp)
@@ -530,14 +537,30 @@ class SimilarAnimation {
     _get3FramesAnimation(self) {
         self.video.pause();
 
-        function showPercentedFrame(percent) {
-            self.showFramePercent(percent, false)
-            let newPercent = percent + 25
-            if (newPercent === 100) newPercent = 25
-            self.timers.push(window.setTimeout((p) => showPercentedFrame(p), 1000, newPercent))
+        function drawFrameNumber(num) {
+            self.ctx.fillStyle = "black";
+            let w = self.canvas.width,
+                h = self.canvas.height
+            self.ctx.fillRect(w - w * 0.10, h - w * 0.10, w * 0.1, w * 0.1)
+            self.ctx.fillStyle = "white"
+            self.ctx.textAlign = 'center';
+            self.ctx.textBaseline = 'middle';
+            self.ctx.font = '30px verdana';
+            self.ctx.fillText(num, w - w * 0.05, h - w * 0.05)
         }
 
-        self.showFramePercent(25)
+        function showPercentedFrame(percent) {
+            self.showFramePercent(percent, false).then(_ => {
+                drawFrameNumber(percent / 25)
+            })
+            let newPercent = percent + 25
+            if (newPercent === 100) newPercent = 25
+            self.timers.push(window.setTimeout((p) => showPercentedFrame(p), 600, newPercent))
+        }
+
+        self.showFramePercent(25).then(_ => {
+            drawFrameNumber(1)
+        })
         self.canvas.play = () => showPercentedFrame(25)
 
         self.strategy = self._defaultNextFrame;
