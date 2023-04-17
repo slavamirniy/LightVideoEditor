@@ -534,7 +534,7 @@ class SimilarAnimation {
             self.showFramePercent(percent, false)
             let newPercent = percent + 25
             if (newPercent === 100) newPercent = 25
-            self.timers.push(window.setTimeout((p) => showPercentedFrame(p), 600, newPercent))
+            self.timers.push(window.setTimeout((p) => showPercentedFrame(p), 1000, newPercent))
         }
 
         self.showFramePercent(25)
