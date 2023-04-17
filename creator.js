@@ -165,6 +165,7 @@ class SimilarAnimation {
         return {
             "video": {
                 "none": self._videoShow,
+                "crop2": self._crop2Animation,
                 "flipVertical": self._flipVerticalAnimation,
                 "flipHorizontal": self._flipHorizontalAnimation,
                 "slowMotion": self._slowAnimation,
@@ -186,6 +187,7 @@ class SimilarAnimation {
             },
             "image": {
                 "none": self._imageShow,
+                "crop2": self._imageCrop2,
                 "colorCorrection_0": self._imageColorCorrection,
                 "flipHorizontal": self._imageFlipHorizontal,
                 "flipVertical": self._imageFlipVertical,
@@ -377,6 +379,16 @@ class SimilarAnimation {
             x, y, w, h);
     }
 
+    _crop2NextFrame(canvasScaledWidth, canvasScaledHeight, ctx) {
+        let w = this.videoWidth / 2,
+            h = this.videoHeight / 2;
+
+        let y = 0.5 * (this.canvas.height - canvasScaledHeight);
+        let x = 0.5 * (this.canvas.width - canvasScaledWidth);
+
+        ctx.drawImage(this.video, w - w / 2, h - h / 2, w, h, x, y, canvasScaledWidth, canvasScaledHeight)
+    }
+
     _getDivider() {
         let value = this.dividerPosition
 
@@ -446,6 +458,10 @@ class SimilarAnimation {
 
     _cropVerticalRotate270NextFrame(canvasScaledWidth, canvasScaledHeight, ctx) {
         this._verticalCropNextFrame(canvasScaledWidth, canvasScaledHeight, ctx, 270);
+    }
+
+    _crop2Animation(self) {
+        self.strategy = self._crop2NextFrame;
     }
 
     _upscaleAnimation(self) {
@@ -561,6 +577,20 @@ class SimilarAnimation {
         ctx.filter = 'blur(0px)'
         ctx.drawImage(this.image, this.image.width / 2, 0, this.image.width / 2, this.image.height, x + canvasScaledWidth / 2, y, canvasScaledWidth / 2, canvasScaledHeight);
         this._drawDivider({ left: 0.5 }, canvasScaledWidth, canvasScaledHeight, ctx);
+    }
+
+    _imageCrop2(self) {
+        self.strategy = self._crop2ShowImage;
+    }
+
+    _crop2ShowImage(canvasScaledWidth, canvasScaledHeight, ctx) {
+        let w = this.image.width / 2,
+            h = this.image.height / 2;
+
+        let y = 0.5 * (this.canvas.height - canvasScaledHeight);
+        let x = 0.5 * (this.canvas.width - canvasScaledWidth);
+
+        ctx.drawImage(this.image, w - w / 2, h - h / 2, w, h, x, y, canvasScaledWidth, canvasScaledHeight)
     }
 
     _imageToVertical(self) {
