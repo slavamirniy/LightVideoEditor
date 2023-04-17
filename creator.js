@@ -88,13 +88,14 @@ class SimilarAnimation {
             return this
         }
 
-        this.showFrame = function(s) {
+        this.showFrame = function(s, clearPrevious = true) {
             if (this.type != 'video') {
                 console.error("Trying to show frame of not video")
                 return
             }
 
-            this.reset()
+            if (clearPrevious)
+                this.reset()
             this.video.pause()
             this.video.currentTime = s
             this.strategy = this._videoShow
@@ -116,27 +117,27 @@ class SimilarAnimation {
 
         }
 
-        this.canvas.showFrame = (s) => this.showFrame(s)
+        this.canvas.showFrame = (s, cp = true) => this.showFrame(s, cp)
 
-        this.showFramePercent = function(percent) {
+        this.showFramePercent = function(percent, clearPrevious = true) {
             if (this.type != 'video') {
                 console.error("Trying to show frame of not video")
                 return
             }
 
             if (this.video.readyState >= 3) {
-                this.showFrame(this.video.duration * percent / 100)
+                this.showFrame(this.video.duration * percent / 100, clearPrevious)
                 return
             }
 
             this.video.addEventListener('loadeddata', (e) => {
                 if (e.target.readyState >= 3) {
-                    e.target.owner.showFrame(e.target.duration * percent / 100)
+                    e.target.owner.showFrame(e.target.duration * percent / 100, clearPrevious)
                 }
             });
         }
 
-        this.canvas.showFramePercent = (percent) => this.showFramePercent(percent)
+        this.canvas.showFramePercent = (percent, cp = true) => this.showFramePercent(percent, cp)
 
 
         canvas.addEventListener("mousemove", function(e) {
@@ -166,6 +167,7 @@ class SimilarAnimation {
             "video": {
                 "none": self._videoShow,
                 "crop2": self._crop2Animation,
+                "get3Frames": self._get3FramesAnimation,
                 "flipVertical": self._flipVerticalAnimation,
                 "flipHorizontal": self._flipHorizontalAnimation,
                 "slowMotion": self._slowAnimation,
@@ -522,6 +524,22 @@ class SimilarAnimation {
                 }
             }
         }
+        self.strategy = self._defaultNextFrame;
+    }
+
+    _get3FramesAnimation(self) {
+        self.video.pause();
+
+        function showPercentedFrame(percent) {
+            self.showFramePercent(percent, false)
+            let newPercent = percent + 25
+            if (newPercent === 100) newPercent = 25
+            self.timers.push(window.setTimeout((p) => showPercentedFrame(p), 300, newPercent))
+        }
+
+        self.showFramePercent(25)
+        self.canvas.play = () => showPercentedFrame(25)
+
         self.strategy = self._defaultNextFrame;
     }
 
