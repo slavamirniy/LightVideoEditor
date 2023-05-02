@@ -173,8 +173,9 @@ class SimilarAnimation {
         return {
             "video": {
                 "none": self._videoShow,
-                "crop2": self._crop2Animation,
+                "cropUpscale": self._crop2Animation,
                 "get3Frames": self._get3FramesAnimation,
+                "get4Frames": self._get4FramesAnimation,
                 "flipVertical": self._flipVerticalAnimation,
                 "flipHorizontal": self._flipHorizontalAnimation,
                 "slowMotion": self._slowAnimation,
@@ -534,24 +535,24 @@ class SimilarAnimation {
         self.strategy = self._defaultNextFrame;
     }
 
+    _drawFrameNumber(num) {
+        this.ctx.fillStyle = "black";
+        let w = this.canvas.width,
+            h = this.canvas.height
+        this.ctx.fillRect(w - w * 0.10, h - w * 0.10, w * 0.1, w * 0.1)
+        this.ctx.fillStyle = "white"
+        this.ctx.textAlign = 'center';
+        this.ctx.textBaseline = 'middle';
+        this.ctx.font = '30px verdana';
+        this.ctx.fillText(num, w - w * 0.05, h - w * 0.05)
+    }
+
     _get3FramesAnimation(self) {
         self.video.pause();
 
-        function drawFrameNumber(num) {
-            self.ctx.fillStyle = "black";
-            let w = self.canvas.width,
-                h = self.canvas.height
-            self.ctx.fillRect(w - w * 0.10, h - w * 0.10, w * 0.1, w * 0.1)
-            self.ctx.fillStyle = "white"
-            self.ctx.textAlign = 'center';
-            self.ctx.textBaseline = 'middle';
-            self.ctx.font = '30px verdana';
-            self.ctx.fillText(num, w - w * 0.05, h - w * 0.05)
-        }
-
         function showPercentedFrame(percent) {
             self.showFramePercent(percent, false).then(_ => {
-                drawFrameNumber(percent / 25)
+                self._drawFrameNumber(percent / 25)
             })
             let newPercent = percent + 25
             if (newPercent === 100) newPercent = 25
@@ -559,9 +560,30 @@ class SimilarAnimation {
         }
 
         self.showFramePercent(25).then(_ => {
-            drawFrameNumber(1)
+            self._drawFrameNumber(1)
         })
         self.canvas.play = () => showPercentedFrame(25)
+
+        self.strategy = self._defaultNextFrame;
+    }
+
+    _get4FramesAnimation(self) {
+        self.video.pause();
+        const percents = [10, 25, 50, 75]
+
+        function showPercentedFrame(i) {
+            self.showFramePercent(percents[i], false).then(_ => {
+                self._drawFrameNumber(i + 1)
+            })
+            let nextI = i + 1
+            if (nextI === percents.length) nextI = 0
+            self.timers.push(window.setTimeout((p) => showPercentedFrame(p), 600, nextI))
+        }
+
+        self.showFramePercent(10).then(_ => {
+            self._drawFrameNumber(1)
+        })
+        self.canvas.play = () => showPercentedFrame(0)
 
         self.strategy = self._defaultNextFrame;
     }
