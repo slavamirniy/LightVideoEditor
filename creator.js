@@ -175,12 +175,12 @@ class SimilarAnimation {
                 "none": self._videoShow,
                 "cropUpscale": self._crop2Animation,
                 "get3Frames": self._get3FramesAnimation,
-                "get4Frames": self._get4FramesAnimation,
+                "getFrames": self._get4FramesAnimation,
                 "flipVertical": self._flipVerticalAnimation,
                 "flipHorizontal": self._flipHorizontalAnimation,
                 "slowMotion": self._slowAnimation,
                 "fastMotion": self._fastAnimation,
-                "getFrames": self._getFramesAnimation,
+                "getFramesLegacy": self._getFramesAnimation,
                 "upscale": self._upscaleAnimation,
                 "toVertical": self._toVerticalAnimation,
                 "toVerticalRotate90": self._toVerticalRotate90Animation,
@@ -515,6 +515,7 @@ class SimilarAnimation {
             let frameHeight = q * (owner.videoHeight / s);
             let frameWidth = q * (owner.videoWidth / s);
 
+            owner.ctx.fillStyle = 'black'
             owner.ctx.fillRect(0, 0, owner.canvas.width, owner.canvas.height);
             for (let i = 0, x = 0, y = 0; i <= framesCount; i++) {
                 owner.video.currentTime = 0;
