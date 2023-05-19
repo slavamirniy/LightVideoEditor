@@ -173,7 +173,7 @@ class SimilarAnimation {
         return {
             "video": {
                 "none": self._videoShow,
-                "cropUpscale": self._crop2Animation,
+                "cropCenter": self._crop2Animation,
                 "get3Frames": self._get3FramesAnimation,
                 "getFrames": self._get4FramesAnimation,
                 "flipVertical": self._flipVerticalAnimation,
