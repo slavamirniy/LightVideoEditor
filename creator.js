@@ -362,8 +362,12 @@ class SimilarAnimation {
         if (rotation == 90 || rotation == 270) {
             ctx.setTransform(1, 0, 0, 1, this.canvas.width / 2, this.canvas.height / 2);
             ctx.rotate(rot);
-            ratio = Math.min(this.canvas.width / h, this.canvas.height / w);
-            ctx.drawImage(this.video, this.videoWidth / 2 - width / 2, 0, width, height, -y - w * ratio / 2, -h * ratio / 2, w * ratio, h * ratio);
+            // Это если хочется сначала кроп, потом поворот кропнутого
+            // ratio = Math.min(this.canvas.width / h, this.canvas.height / w);
+            // ctx.drawImage(this.video, this.videoWidth / 2 - width / 2, 0, width, height, -y - w * ratio / 2, -h * ratio / 2, w * ratio, h * ratio);
+            width = this.videoWidth
+            height = width * 9 / 16
+            ctx.drawImage(this.video, 0, this.videoHeight / 2 - height / 2, width, height, 0 - h / 2, 0 - w / 2, h, w);
         }
         if (rotation == 0)
             ctx.drawImage(this.video, this.videoWidth / 2 - width / 2, 0, width, height, x, y, w, h);
