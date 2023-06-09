@@ -346,7 +346,7 @@ class SimilarAnimation {
     }
 
     _verticalCropNextFrame(canvasScaledWidth, canvasScaledHeight, ctx, rotation = 0) {
-        let height = this.videoHeight;
+        let height = Math.min(this.videoHeight, this.videoWidth / 9 * 16);
         let width = height * 9 / 16;
 
         let hRatio = this.canvas.width / width;
@@ -354,7 +354,7 @@ class SimilarAnimation {
         let ratio = Math.min(hRatio, vRatio);
 
         let w = width * ratio
-        let h = this.videoHeight * ratio
+        let h = height * ratio
         let y = 0.5 * (this.canvas.height - h);
         let x = 0.5 * (this.canvas.width - w);
 
@@ -365,12 +365,20 @@ class SimilarAnimation {
             // Это если хочется сначала кроп, потом поворот кропнутого
             // ratio = Math.min(this.canvas.width / h, this.canvas.height / w);
             // ctx.drawImage(this.video, this.videoWidth / 2 - width / 2, 0, width, height, -y - w * ratio / 2, -h * ratio / 2, w * ratio, h * ratio);
-            width = this.videoWidth
-            height = width * 9 / 16
-            ctx.drawImage(this.video, 0, this.videoHeight / 2 - height / 2, width, height, 0 - h / 2, 0 - w / 2, h, w);
+            width = Math.min(this.videoWidth, this.videoHeight / 9 * 16);
+            height = width * 9 / 16;
+            hRatio = this.canvas.width / height;
+            vRatio = this.canvas.height / width;
+            ratio = Math.min(hRatio, vRatio);
+
+            h = height * ratio
+            w = width * ratio
+            x = 0.5 * (this.canvas.height - h);
+            y = 0.5 * (this.canvas.width - w);
+            ctx.drawImage(this.video, this.videoWidth / 2 - width / 2, this.videoHeight / 2 - height / 2, width, height, -w / 2, -h / 2, w, h);
         }
         if (rotation == 0)
-            ctx.drawImage(this.video, this.videoWidth / 2 - width / 2, 0, width, height, x, y, w, h);
+            ctx.drawImage(this.video, this.videoWidth / 2 - width / 2, this.videoHeight / 2 - height / 2, width, height, x, y, w, h);
         ctx.setTransform(1, 0, 0, 1, 0, 0);
     }
 
@@ -666,7 +674,7 @@ class SimilarAnimation {
     }
 
     _toVerticalShowImage(canvasScaledWidth, canvasScaledHeight, ctx) {
-        let height = this.image.height;
+        let height = Math.min(this.image.height, this.image.width / 9 * 16);
         let width = height * 9 / 16;
 
         let hRatio = this.canvas.width / width;
