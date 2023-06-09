@@ -383,13 +383,14 @@ class SimilarAnimation {
     }
 
     _horizontalCropNextFrame(canvasScaledWidth, canvasScaledHeight, ctx) {
-        let height = this.videoHeight * 9 / 16;
+        let height = Math.min(this.videoHeight, this.videoWidth / 16 * 9);
+        let width = height * 16 / 9;
 
-        let hRatio = this.canvas.width / this.videoWidth;
+        let hRatio = this.canvas.width / width;
         let vRatio = this.canvas.height / height;
         let ratio = Math.min(hRatio, vRatio);
 
-        let w = this.videoWidth * ratio
+        let w = width * ratio
         let h = height * ratio
 
         let y = 0.5 * (this.canvas.height - h);
@@ -397,7 +398,7 @@ class SimilarAnimation {
 
         console.log(w, h)
 
-        ctx.drawImage(this.video, 0, this.videoHeight / 2 - height / 2, this.videoWidth, height,
+        ctx.drawImage(this.video, this.videoWidth / 2 - width / 2, this.videoHeight / 2 - height / 2, this.videoWidth, height,
             x, y, w, h);
     }
 
