@@ -263,7 +263,7 @@ class SimilarAnimation {
         this.ctx.fillStyle = "white"
         this.ctx.textAlign = 'center';
         this.ctx.textBaseline = 'middle';
-        this.ctx.font = '20px verdana';
+        this.ctx.font = '15px verdana';
         this.ctx.fillText(t + " s.", cw - w / 2, h / 2, w)
 
         this.ctx.filter = filterSave;
