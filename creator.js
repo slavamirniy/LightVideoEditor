@@ -194,6 +194,8 @@ class SimilarAnimation {
                 "frame50": () => self.showFramePercent(50),
                 "frame75": () => self.showFramePercent(75),
                 "frame100": () => self.showFramePercent(100),
+                "rotate90": self._videoRotate90,
+                "rotate270": self._videoRotate270,
             },
             "image": {
                 "none": self._imageShow,
@@ -509,6 +511,36 @@ class SimilarAnimation {
 
     _toVerticalRotate270Animation(self) {
         self.strategy = self._cropVerticalRotate270NextFrame;
+    }
+
+    _videoRotate90(self) {
+        const rot = 90 * Math.PI / 180
+        self.ctx.setTransform(1, 0, 0, 1, self.canvas.width / 2, self.canvas.height / 2);
+        self.ctx.rotate(rot);
+        self.strategy = self._rotatetedNextFrame;
+    }
+
+    _videoRotate270(self) {
+        const rot = 270 * Math.PI / 180
+        self.ctx.setTransform(1, 0, 0, 1, self.canvas.width / 2, self.canvas.height / 2);
+        self.ctx.rotate(rot);
+        self.strategy = self._rotatetedNextFrame;
+    }
+
+    _rotatetedNextFrame(canvasScaledWidth, canvasScaledHeight, ctx) {
+        let height = this.videoHeight;
+        let width = this.videoWidth;
+
+        let hRatio = this.canvas.width / width;
+        let vRatio = this.canvas.height / height;
+        let ratio = Math.min(hRatio, vRatio);
+
+        let w = width * ratio
+        let h = height * ratio
+        let y = 0.5 * (this.canvas.height - h);
+
+        ratio = Math.min(this.canvas.width / h, this.canvas.height / w);
+        ctx.drawImage(this.video, -y - w * ratio / 2, -h * ratio / 2, w * ratio, h * ratio);
     }
 
     _greenscreenBackgroundAnimation(self) {
