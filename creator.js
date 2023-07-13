@@ -248,16 +248,17 @@ class SimilarAnimation {
         let saveAlpha = this.ctx.globalAlpha
         this.ctx.globalAlpha = 1
 
+        let t = Math.floor(this.video.duration * 10) / 10;
+        if (!t) return
+        if (this.strategy === this._slowNextFrame)
+            t *= 2
+
         const cw = this.canvas.width,
             ch = this.canvas.height;
         const w = cw * 0.15,
             h = ch * 0.1
 
         this.ctx.fillRect(cw - w, 0, w, h)
-
-        let t = Math.floor(this.video.duration * 10) / 10;
-        if (this.strategy === this._slowNextFrame)
-            t *= 2
 
         this.ctx.fillStyle = "white"
         this.ctx.textAlign = 'center';
