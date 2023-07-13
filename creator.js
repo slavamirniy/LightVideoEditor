@@ -181,7 +181,7 @@ class SimilarAnimation {
                 "flipVertical": self._flipVerticalAnimation,
                 "flipHorizontal": self._flipHorizontalAnimation,
                 "slowMotion": self._slowAnimation,
-                "fastMotion": self._fastAnimation,
+                "fastMotion": self._fastAnimation, // сука не менят, или менят, но менять drawVideoDuration
                 "getFramesLegacy": self._getFramesAnimation,
                 "upscale": self._upscaleAnimation,
                 "toVertical": self._toVerticalAnimation,
@@ -252,6 +252,9 @@ class SimilarAnimation {
         if (!t && t !== 0) return
         if (this.strategy === this._slowNextFrame)
             t *= 2
+
+        if (this.animationName === 'fastMotion')
+            t *= 0.5
 
         const cw = this.canvas.width,
             ch = this.canvas.height;
