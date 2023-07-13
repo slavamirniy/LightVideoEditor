@@ -249,7 +249,7 @@ class SimilarAnimation {
         this.ctx.globalAlpha = 1
 
         let t = Math.floor(this.video.duration * 10) / 10;
-        if (!t) return
+        if (!t && t !== 0) return
         if (this.strategy === this._slowNextFrame)
             t *= 2
 
