@@ -28,6 +28,8 @@ class SimilarAnimation {
         this.dividerPositionVX = 1;
         this.dividerMove = true;
 
+        this.isDrawVideoDuration = true;
+
         if (type == "video")
             this._startVideo(source);
         if (type == "image")
@@ -237,6 +239,37 @@ class SimilarAnimation {
             this.video.remove();
     }
 
+    _drawVideoDuration() {
+        this.ctx.fillStyle = "black";
+        let filterSave = this.ctx.filter
+        this.ctx.filter = ''
+        let transformSave = this.ctx.getTransform()
+        this.ctx.resetTransform()
+        let saveAlpha = this.ctx.globalAlpha
+        this.ctx.globalAlpha = 1
+
+        const cw = this.canvas.width,
+            ch = this.canvas.height;
+        const w = cw * 0.15,
+            h = ch * 0.1
+
+        this.ctx.fillRect(cw - w, 0, w, h)
+
+        let t = Math.floor(this.video.duration * 10) / 10;
+        if (this.strategy === this._slowNextFrame)
+            t *= 2
+
+        this.ctx.fillStyle = "white"
+        this.ctx.textAlign = 'center';
+        this.ctx.textBaseline = 'middle';
+        this.ctx.font = '20px verdana';
+        this.ctx.fillText(t + " s.", cw - w / 2, h / 2, w)
+
+        this.ctx.filter = filterSave;
+        this.ctx.setTransform(transformSave)
+        this.ctx.globalAlpha = saveAlpha
+    }
+
     _startImage(source) {
         this.imageSource = source;
 
@@ -314,6 +347,9 @@ class SimilarAnimation {
                     canvasScaledHeight = owner.scaledHeight * ratio
 
                     owner.strategy(canvasScaledWidth, canvasScaledHeight, owner.ctx);
+
+                    if (owner.isDrawVideoDuration)
+                        owner._drawVideoDuration()
 
                     let timer = setTimeout(loop, 1000 / 30);
                     owner.timers.push(timer);
