@@ -376,8 +376,8 @@ class SimilarAnimation {
     }
 
     _slowNextFrame(canvasScaledWidth, canvasScaledHeight, ctx) {
-        ctx.globalAlpha = 0.2
-        this.video.playbackRate = 0.3
+        ctx.globalAlpha = 0.3
+        this.video.playbackRate = 0.5
         let y = 0.5 * (this.canvas.height - canvasScaledHeight);
         let x = 0.5 * (this.canvas.width - canvasScaledWidth);
         ctx.drawImage(this.video, x, y, canvasScaledWidth, canvasScaledHeight);
