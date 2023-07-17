@@ -180,7 +180,8 @@ class SimilarAnimation {
                 "getFrames": self._get4FramesAnimation,
                 "flipVertical": self._flipVerticalAnimation,
                 "flipHorizontal": self._flipHorizontalAnimation,
-                "slowMotion": self._slowAnimation,
+                "slowMotionX2": self._slowAnimationX2,
+                "slowMotionX4": self._slowAnimationX4,
                 "fastMotion": self._fastAnimation, // сука не менят, или менят, но менять drawVideoDuration
                 "getFramesLegacy": self._getFramesAnimation,
                 "upscale": self._upscaleAnimation,
@@ -189,7 +190,7 @@ class SimilarAnimation {
                 "toVerticalRotate270": self._toVerticalRotate270Animation,
                 "toHorizontal": self._toHorizontalAnimation,
                 "colorCorrection_0": self._colorAnimation,
-                "noiseAnimation": self._noiseAnimation,
+                "denoiseAnimation": self._noiseAnimation,
                 "stabilizationAnimation": self._stabilizationAnimation,
                 "greenscreenBackground": self._greenscreenBackgroundAnimation,
                 "frame25": () => self.showFramePercent(25),
@@ -251,7 +252,7 @@ class SimilarAnimation {
         let t = Math.floor(this.video.duration * 10) / 10;
         if (!t && t !== 0) return
         if (this.strategy === this._slowNextFrame)
-            t *= 2
+            t *= 1 / this.speed
 
         if (this.animationName === 'fastMotion')
             t *= 0.5
@@ -381,7 +382,7 @@ class SimilarAnimation {
 
     _slowNextFrame(canvasScaledWidth, canvasScaledHeight, ctx) {
         ctx.globalAlpha = 0.3
-        this.video.playbackRate = 0.5
+        this.video.playbackRate = this.speed
         let y = 0.5 * (this.canvas.height - canvasScaledHeight);
         let x = 0.5 * (this.canvas.width - canvasScaledWidth);
         ctx.drawImage(this.video, x, y, canvasScaledWidth, canvasScaledHeight);
@@ -800,7 +801,13 @@ class SimilarAnimation {
         ctx.drawImage(greenscreen_image, ctx.canvas.width / 2 - width / 2, 0, width, ctx.canvas.height)
     }
 
-    _slowAnimation(self) {
+    _slowAnimationX2(self) {
+        self.speed = 0.5;
+        self.strategy = self._slowNextFrame;
+    }
+
+    _slowAnimationX4(self) {
+        self.speed = 0.25;
         self.strategy = self._slowNextFrame;
     }
 
