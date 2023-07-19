@@ -190,7 +190,7 @@ class SimilarAnimation {
                 "toVerticalRotate270": self._toVerticalRotate270Animation,
                 "toHorizontal": self._toHorizontalAnimation,
                 "colorCorrection_0": self._colorAnimation,
-                "denoiseAnimation": self._noiseAnimation,
+                "denoise": self._noiseAnimation,
                 "stabilizationAnimation": self._stabilizationAnimation,
                 "greenscreenBackground": self._greenscreenBackgroundAnimation,
                 "frame25": () => self.showFramePercent(25),
