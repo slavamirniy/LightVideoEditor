@@ -191,7 +191,7 @@ class SimilarAnimation {
                 "toHorizontal": self._toHorizontalAnimation,
                 "colorCorrection_0": self._colorAnimation,
                 "denoise": self._noiseAnimation,
-                "stabilizationAnimation": self._stabilizationAnimation,
+                "stabilize": self._stabilize,
                 "greenscreenBackground": self._greenscreenBackgroundAnimation,
                 "frame25": () => self.showFramePercent(25),
                 "frame50": () => self.showFramePercent(50),
@@ -820,7 +820,7 @@ class SimilarAnimation {
         self.strategy = self._noiseNextFrame;
     }
 
-    _stabilizationAnimation(self) {
+    _stabilize(self) {
         self.strategy = self._stabilizationNextFrame;
     }
 
